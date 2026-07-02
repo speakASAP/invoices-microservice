@@ -205,11 +205,16 @@ fails in the final run, stop.
 Before enabling the Orders consumer, run:
 
 ```bash
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:seller-legal-source'
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run runtime:sync-seller-legal'
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:consumer-enable-prereqs'
 ```
 
-This allows `ORDERS_EVENTS_CONSUMER_ENABLED=false` but still requires seller
-legal data and all other final-smoke gates. After it passes, enable the
+The seller commands require the dedicated Vault path
+`secret/prod/invoices-microservice-seller` with approved, non-placeholder legal
+values and do not print those values. The consumer-enable prerequisite command
+allows `ORDERS_EVENTS_CONSUMER_ENABLED=false` but still requires seller legal
+data and all other final-smoke gates. After it passes, enable the
 consumer only through:
 
 ```bash

@@ -526,6 +526,25 @@ The enable script was not executed in this lane because
 fail-closed deployment boundary while making the final smoke switch executable
 once approved seller legal data exists.
 
+## 2026-07-02 - Seller Legal Secret Bootstrap Tooling
+
+Added the seller legal sync path without inventing legal/tax values:
+
+- `k8s/seller-external-secret.yaml` maps
+  `secret/prod/invoices-microservice-seller` into the Kubernetes secret
+  `invoices-microservice-seller-secret`.
+- `npm run verify:seller-legal-source` checks the Vault path and required keys
+  without printing values. It requires seller name, seller address, and at
+  least one company/tax/VAT identifier.
+- `npm run runtime:sync-seller-legal` applies the ExternalSecret only after the
+  Vault source passes, force-syncs it, waits for the Kubernetes secret, and
+  reruns the pre-consumer final-smoke gate.
+- `verify-runtime-readiness` now asserts this guarded seller legal path.
+
+The sync command was not executed because
+`secret/prod/invoices-microservice-seller` is still missing. The next required
+external action is to create that Vault path with approved seller legal data.
+
 
 ## 2026-07-02 - Logging Contract Hardening
 

@@ -196,6 +196,17 @@ pre-enable gate passes, then patches
 reruns the strict final-smoke prerequisite check. The script was not executed
 because seller legal data is still `[MISSING]`.
 
+2026-07-02 continuation: Added Vault-backed seller legal bootstrap tooling.
+`k8s/seller-external-secret.yaml` maps the dedicated
+`secret/prod/invoices-microservice-seller` Vault path into
+`invoices-microservice-seller-secret`. `npm run verify:seller-legal-source`
+checks that the Vault path has non-placeholder seller name/address plus at
+least one company/tax/VAT identifier without printing values.
+`npm run runtime:sync-seller-legal` applies the ExternalSecret only after those
+checks pass, force-syncs it, and reruns the pre-consumer final-smoke gate. The
+runtime sync was not executed because the seller legal Vault path is still
+`[MISSING]`.
+
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
 consumer enablement, seller legal secret, Payments `payments:read` scope for

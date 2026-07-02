@@ -57,7 +57,7 @@ Last observed on 2026-07-02:
 | B Database | complete | DB/platform owner | `invoices` database exists | implicit DB create; destructive DB operations | `npm run verify:runtime-prereqs` database check passes |
 | C Payments key | complete | Payments owner | invoices `PAYMENTS_API_KEY` is registered in Payments `API_KEYS` with `payments:read` scope | sharing raw keys in docs/logs | `npm run verify:final-smoke-prereqs` scope check passes |
 | D Notifications delivery | complete-for-no-send | Notifications owner | `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` is projected; active `invoices.documents` policy allows `invoices-microservice` and `transactional` | real customer sends before approval | `npm run verify:final-smoke-prereqs`; Notifications no-send readiness pass |
-| E Seller legal | approval-gated | legal/platform owner | create `invoices-microservice-seller-secret` with seller legal identity and tax/company identifier | fake legal identity | `npm run verify:final-smoke-prereqs` seller checks |
+| E Seller legal | approval-gated | legal/platform owner | create `secret/prod/invoices-microservice-seller` with seller legal identity and tax/company identifier, then sync `invoices-microservice-seller-secret` through ExternalSecret | fake legal identity; printing legal secret values | `npm run verify:seller-legal-source`; `npm run runtime:sync-seller-legal`; `npm run verify:consumer-enable-prereqs` |
 | F Deploy switch | partially-complete | integration owner | workload deployed with `INVOICES_PUBLIC_BASE_URL=https://invoices.alfares.cz`; enable `ORDERS_EVENTS_CONSUMER_ENABLED=true` only for final smoke after seller legal data exists | enabling consumer before seller legal data exists | `npm run verify:consumer-enable-prereqs`; `npm run runtime:enable-orders-consumer`; `npm run verify:final-smoke-prereqs` |
 | G Final smoke | dependency-gated | validation owner | synthetic order, proforma invoice, paid event, final tax invoice, account download, logging evidence | real customer order/payment/notification | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` |
 | H Document storage | source-selected-runtime-gated | invoices/storage + MinIO owners | future private MinIO/S3 bucket, object references, checksum verified upload/read, tokenized or presigned access | public bucket, root credentials, object overwrite/delete, raw PDF logs | `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md`; future storage smoke |
@@ -91,6 +91,8 @@ Last observed on 2026-07-02:
    Before enabling the Orders consumer, prove every other final-smoke gate:
 
    ```bash
+   ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:seller-legal-source'
+   ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run runtime:sync-seller-legal'
    ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:consumer-enable-prereqs'
    ```
 

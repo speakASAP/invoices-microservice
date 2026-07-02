@@ -14,6 +14,8 @@
     "verify:runtime-prereqs": "bash scripts/check-runtime-prereqs.sh",
     "verify:final-smoke-prereqs": "bash scripts/check-final-smoke-prereqs.sh",
     "verify:consumer-enable-prereqs": "ALLOW_CONSUMER_DISABLED=true bash scripts/check-final-smoke-prereqs.sh",
+    "verify:seller-legal-source": "VERIFY_ONLY=true bash scripts/sync-seller-legal-secret.sh",
+    "runtime:sync-seller-legal": "bash scripts/sync-seller-legal-secret.sh",
     "runtime:enable-orders-consumer": "bash scripts/enable-orders-consumer-for-final-smoke.sh"
   },
   "dependencies": {
