@@ -355,3 +355,48 @@ Orders remains canonical order truth and event producer. Payments remains
 payment identity/reconciliation truth. Invoices owns issuance records, invoice
 numbering, immutable invoice snapshots, document rendering, and delivery
 attempt state.
+
+## 2026-07-02 - Final Smoke Fixture And Evidence Passed
+
+Implemented and executed the owner-approved synthetic final-smoke fixture for
+Invoices delivery readiness:
+
+- Added `npm run runtime:run-final-smoke-fixture`, guarded by
+  `FINAL_SMOKE_APPROVED=true`.
+- Fixture created synthetic internal Orders/Payments rows only, used
+  `PAYMENT_APPLICATION_ID=statex`, omitted `customer.email`, recorded
+  `providerCall=false` / `customerContact=false`, and published only
+  `orders.order.created.v1` plus `orders.order.paid.v1` trigger events.
+- Fixture output: `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19`,
+  `PAYMENT_APPLICATION_ID=statex`,
+  `PAYMENT_ID=d275ef54-40c6-42d7-b8f8-3a6be4a0aef4`.
+- `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex npm run verify:final-smoke-evidence`
+  passed. Evidence covered strict prerequisites, one proforma invoice, one final
+  invoice, processed created/paid event records, internal invoice list/document
+  endpoints, internal HTML/PDF reads, and Payments read-only status snapshot with
+  `providerCall=false`, `mutation=false`, and `persistence=false`.
+- Post-run runtime snapshot: Orders, Invoices, Payments, Notifications, Logging
+  deployments all `1/1`; `invoices.orders.lifecycle` queue `0` ready, `0`
+  unacked, `1` consumer.
+- Notifications DB bounded count for the synthetic order ID returned `0`, so no
+  notification row/provider-send path was created for this smoke.
+
+Skipped by design: customer account evidence, download-link rotation, and
+Logging admin evidence because their optional bearer/admin inputs were not
+provided and token rotation is a durable mutation.
+
+Remaining blockers:
+
+- [MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]
+- [MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]
+- [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
+
+Validation:
+
+- `bash -n scripts/run-final-smoke-fixture.sh`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `npm run build`: passed.
+- `npm test -- --runInBand`: passed, 8 suites / 21 tests.
+- `git diff --check`: passed.
+- `npm run verify:final-smoke-prereqs`: passed.
+- `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex npm run verify:final-smoke-evidence`: passed.

@@ -511,10 +511,14 @@ Merge/order of operations:
 4. Orchestrator provides or approves a synthetic fixture executor that creates a central Orders UUID, preserves or cleans Warehouse reservation state, creates a matching Payments snapshot, and completes payment without provider/customer-contact mutation.
 5. Validation owner runs `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence` and captures API, DB, Payments, and optional account/logging evidence without secrets or raw customer data.
 
+## Latest final-smoke evidence
+
+- 2026-07-02: `FINAL_SMOKE_APPROVED=true npm run runtime:run-final-smoke-fixture` created synthetic `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19`, `PAYMENT_APPLICATION_ID=statex`, `PAYMENT_ID=d275ef54-40c6-42d7-b8f8-3a6be4a0aef4`.
+- `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex npm run verify:final-smoke-evidence` passed.
+- Notifications DB bounded count for the synthetic order ID returned `0`; no notification row/provider-send path was created.
+
 ## Open Blockers
 
-- Source-ready executor: `npm run runtime:run-final-smoke-fixture` creates a synthetic internal Orders/Payments fixture with `FINAL_SMOKE_APPROVED=true`, no `customer.email`, `providerCall=false`, and no Notifications `/send` precondition. Runtime use remains approval-gated and must be followed by `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence`.
-- `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
 - `[MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]`
 - `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
