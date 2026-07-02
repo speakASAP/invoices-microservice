@@ -305,8 +305,9 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 
-Remaining blocker: external object storage or direct attachment policy is still
-`[MISSING]`; the source baseline stores PDFs in the invoices database.
+Remaining blocker after this PDF baseline: the source baseline stores PDFs in
+the invoices database until the off-database storage contract is selected and
+runtime provisioned.
 
 ## 2026-07-02 - Final Smoke Prerequisite Verifier
 
@@ -376,6 +377,33 @@ Validation:
 - `npm test`: passed, 6 suites / 16 tests.
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.
+
+
+## 2026-07-02 - Invoice Document Storage Contract Selected
+
+Selected the future off-database storage direction without runtime mutation:
+
+- Current accepted first-smoke path remains DB-backed immutable PDF bytes with
+  `documentPdfSha256`, `application/pdf`, stable filename, and tokenized PDF
+  links.
+- Future off-database path is a private MinIO/S3 invoice bucket owned by the
+  storage platform and written by `invoices-microservice` through
+  service-scoped credentials.
+- The key layout is
+  `invoices/{yyyy}/{orderId}/{type}/{invoiceId}-{documentPdfSha256}.pdf`.
+- Customer access remains through invoices tokenized endpoints or future
+  bounded presigned URLs; no public bucket policy.
+- Final tax invoice objects are immutable; corrections/credit notes must be
+  separate future documents, not overwrites.
+- Direct Notifications attachments remain deferred because the current
+  `invoices.documents` delivery contract is link-based.
+
+Validation:
+
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `npm test`: passed, 7 suites / 19 tests.
 - `git diff --check`: passed.
 
 

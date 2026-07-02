@@ -23,6 +23,8 @@ final tax invoice without duplicating Orders or Payments ownership.
 - Orders event validation and RabbitMQ consumer.
 - Idempotent proforma/final issuance.
 - HTML and PDF document rendering with tokenized document access.
+- Source-selected MinIO/S3 document storage contract for future off-database
+  immutable PDF objects.
 - Optional Payments status and Notifications delivery clients.
 - Auth-validated customer account listing/download access.
 - Sanitized fail-open Logging integration.
@@ -42,7 +44,7 @@ final tax invoice without duplicating Orders or Payments ownership.
 | A | Service core | yes | invoices worker | `invoices-microservice/**` | buildable MVP | none |
 | B | Orders service-role read | yes after A contract | Orders integration owner | `orders-microservice/src/auth/*`, `src/orders/orders.controller.ts`, docs | approved internal read path | avoid dirty event files |
 | C | Runtime manifests/secrets | blocked | platform owner | `k8s/*`, Vault/ESO | deployable config | DB and token decisions |
-| D | PDF/delivery | source-ready-runtime-gated | delivery owner | invoices + notifications docs/code | PDFKit generation, DB-backed PDF, secure PDF links | external object storage policy |
+| D | PDF/delivery/storage | source-ready-runtime-gated | delivery/storage owner | invoices + notifications docs/code | PDFKit generation, DB-backed PDF, secure PDF links, MinIO/S3 object-storage contract | runtime bucket, credentials, retention, DB object-reference migration |
 | E | Account access | source-ready-runtime-gated | account owner | invoices account endpoints/tests | Auth subject/email scoped listing and download links | Orders source proof exists; runtime/caller proof gated |
 | F | Logging contract | source-ready | observability owner | `src/common/logger.service.ts`, tests | sanitized `POST /api/logs`, fail-open transport | Logging workload ready |
 | G | Runtime activation | approval-gated | platform/integration owner | Vault, DB, deploy config, final smoke | runtime prerequisite closure and final smoke | owner approval |

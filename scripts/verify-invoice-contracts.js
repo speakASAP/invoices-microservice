@@ -17,6 +17,7 @@ const controller = read('src/invoices/invoices.controller.ts');
 const loggerService = read('src/common/logger.service.ts');
 const k8sConfig = read('k8s/configmap.yaml');
 const docs = read('docs/orchestrator/PLAN.md');
+const storageContract = read('docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md');
 
 assert(eventDto.includes("created: 'orders.order.created.v1'"), 'created Orders event contract missing');
 assert(eventDto.includes("paid: 'orders.order.paid.v1'"), 'paid Orders event contract missing');
@@ -45,5 +46,14 @@ assert(service.includes('findByCustomerIdentity'), 'customer account invoice acc
 assert(service.includes('uq_invoice_documents_order_type') || read('src/migrations/20260702120000-CreateInvoicesTables.ts').includes('uq_invoice_documents_order_type'), 'order/type uniqueness missing');
 assert(docs.includes('Orders events remain trigger-only'), 'trigger-only Orders event plan missing');
 assert(docs.includes('subject/email account-scoped invoice listing'), 'account access plan missing');
+assert(storageContract.includes('MinIO/S3-backed immutable PDF object storage'), 'invoice document storage contract must select MinIO/S3 immutable PDF storage');
+assert(storageContract.includes('[MISSING: invoice document bucket name]'), 'invoice document storage contract must keep bucket provisioning explicit');
+assert(storageContract.includes('invoices/{yyyy}/{orderId}/{type}/{invoiceId}-{documentPdfSha256}.pdf'), 'invoice document storage contract must define deterministic key layout');
+assert(storageContract.includes('documentPdfSha256'), 'invoice document storage contract must require PDF checksum metadata');
+assert(storageContract.includes('application/pdf'), 'invoice document storage contract must require PDF MIME type');
+assert(storageContract.includes('tokenized endpoints') && storageContract.includes('Presigned URLs'), 'invoice document storage contract must define tokenized or presigned access');
+assert(storageContract.includes('Logs must not include raw PDF bytes'), 'invoice document storage contract must forbid raw PDF logs');
+assert(storageContract.includes('Direct email attachments are explicitly deferred'), 'invoice document storage contract must defer direct Notifications attachments');
+assert(storageContract.includes('Do not add S3 runtime dependencies'), 'invoice document storage contract must keep runtime storage implementation gated');
 
 console.log('Invoice contract verification passed');

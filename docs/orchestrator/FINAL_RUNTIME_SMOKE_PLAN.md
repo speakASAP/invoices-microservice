@@ -126,7 +126,17 @@ ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run veri
    - Legacy account access still falls back to `orderSnapshot.customer.email`.
    - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
-9. Payments central-order gate:
+9. Document storage gate:
+   - Current smoke acceptance can use DB-backed immutable PDF bytes and
+     tokenized PDF links.
+   - The selected off-database contract is MinIO/S3-backed immutable PDF
+     objects owned by invoices.
+   - Runtime MinIO/S3 storage is not required for first DB-backed smoke, but it
+     is required before moving large/long-retention tax documents out of the
+     invoices database.
+   - `[MISSING: runtime MinIO/S3 invoice document bucket, credentials, retention policy, DB object-reference migration, upload/presign client, and backfill/rollback plan]`
+
+10. Payments central-order gate:
    - Invoices Vault has `PAYMENTS_API_KEY`.
    - Payments runtime registers that key in `API_KEYS`/
      `PAYMENT_API_KEY_SCOPES` with `payments:read` scope.
@@ -415,7 +425,7 @@ Merge/order of operations:
 - `[MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: seller legal secret values for successful issuance]`
-- `[MISSING: external object-storage/attachment policy if PDF links are insufficient for the delivery channel]`
+- `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
 - `[MISSING: Notifications channel_registry row/policy for invoices.documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`

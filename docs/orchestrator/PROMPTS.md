@@ -17,6 +17,8 @@ event contract files or expand Orders event payload with customer/billing data.
 ## Workstream D: PDF And Delivery
 
 PDF generation is source-implemented with PDFKit and DB-backed immutable bytes.
-Future work should design external object-storage attachment policy after
-runtime storage policy is approved. Do not send real notifications without
-explicit runtime approval.
+The selected future storage contract is MinIO/S3-backed immutable PDF objects
+owned by invoices with tokenized or presigned access. Direct Notifications
+attachments are deferred until a concrete delivery requirement and provider
+contract exist. Do not create buckets, write Vault values, change MinIO policy,
+or send real notifications without explicit runtime approval.

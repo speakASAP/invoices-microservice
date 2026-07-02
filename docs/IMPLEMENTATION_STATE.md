@@ -17,7 +17,7 @@ blockers:
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
   - [MISSING: deployed invoices workload and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
   - [MISSING: final-smoke prerequisite verifier passing in live runtime]
-  - [MISSING: external object-storage/attachment contract for off-database immutable tax documents]
+  - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
 ```
 
 ## Current Checkpoint
@@ -27,7 +27,7 @@ event-driven trigger contract, database model, annual invoice sequences, HTML
 document rendering, opaque download-token access, and optional client stubs for
 Orders, Payments, Notifications, and Logging. The service is source-ready but
 not production-ready until runtime secrets, DB provisioning, seller legal
-configuration, Orders service-role access, and delivery/storage policy are
+configuration, Orders service-role access, and runtime storage provisioning are
 resolved.
 
 Validation passed on 2026-07-02: `npm run build`, `npm test`, `npm run
@@ -133,6 +133,18 @@ HTML snapshot. Internal and tokenized public `.pdf` endpoints are available,
 download-link responses include both HTML and PDF URLs, and Notifications now
 prefers the PDF URL while preserving the existing HTML URL contract. External
 object storage and provider attachment policy remain future runtime gates.
+
+2026-07-02 continuation: Selected the off-database invoice document storage
+contract. `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md` defines a
+future MinIO/S3-backed immutable PDF object path owned by invoices, with a
+private bucket, deterministic key layout, SHA-256 object metadata, tokenized or
+presigned access, retention/immutability rules, sanitized Logging boundaries,
+and explicit deferral of direct Notifications attachments. Current runtime
+remains DB-backed PDF storage until the MinIO/S3 bucket, service credentials,
+retention policy, DB object-reference migration, upload/presign client, and
+backfill/rollback plan are approved and implemented. Validation passed:
+`npm run verify:contracts`, `npm run verify:runtime-readiness`, `npm test`,
+and `git diff --check`.
 
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final

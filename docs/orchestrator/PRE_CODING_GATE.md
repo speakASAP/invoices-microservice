@@ -8,7 +8,7 @@ Exceptions:
 - `[MISSING: runtime projection and verification of ORDERS_SERVICE_TOKEN for invoices-microservice reads]`
 - `[MISSING: seller legal identity and VAT configuration]`
 - `[MISSING: Notifications service token/channel policy for invoice delivery through channelKey invoices.documents]`
-- `[MISSING: external object-storage/attachment contract for PDF tax documents]`
+- `[MISSING: runtime MinIO/S3 bucket, credentials, retention policy, DB object-reference migration, upload/presign client, and backfill plan for off-database PDF tax documents]`
 - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
 Coding may proceed for source-only MVP because the implementation fails closed
