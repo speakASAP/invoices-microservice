@@ -214,3 +214,44 @@ Validation:
 - `npm run verify:runtime-readiness`: passed.
 - server-side Kubernetes dry-run for ConfigMap, ExternalSecret, Deployment,
   Service, and Ingress: passed.
+
+## 2026-07-02 - Integration Orchestration Refresh
+
+Current source state:
+
+- `invoices-microservice` is clean on `main` at
+  `f3e518f feat: make seller legal config optional for startup`.
+- `orders-microservice` source accepts `x-service-name:
+  invoices-microservice` with `INVOICES_INTERNAL_SERVICE_TOKEN`/
+  `INVOICES_ORDERS_SERVICE_TOKEN` for the internal order read boundary.
+- `payments-microservice` source exposes
+  `GET /payments/status/by-order-id?applicationId=<applicationId>&orderId=<orderId>`
+  behind `X-API-Key` with `payments:read` scope.
+- `notifications-microservice` source commit
+  `8a6b7ed feat: allow invoices notifications service actor` accepts
+  `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` as an `invoices-microservice`
+  machine actor. That repository is currently `main...origin/main [ahead 1]`.
+
+Live deploy preflight remains blocked and correctly fails closed:
+
+- `npm run verify:runtime-prereqs`: failed without printing secret values.
+- `[MISSING: Vault path secret/prod/invoices-microservice]`
+- `[MISSING: database invoices]`
+- `[MISSING: deployment orders-microservice desired replicas > 0]`
+- `[MISSING: deployment payments-microservice desired replicas > 0]`
+- `[MISSING: deployment notifications-microservice desired replicas > 0]`
+- Logging is ready `1/1`.
+- RabbitMQ is ready `1/1`.
+
+Parallel lanes now active:
+
+- Runtime provisioning lane owns Vault path/key names, invoices database
+  provisioning plan, and dependency replica readiness.
+- Notifications delivery contract lane owns `invoices.documents` channel
+  policy readiness and no-send validation.
+- Final smoke lane owns the dependency-gated smoke plan for order creation,
+  proforma issuance, payment completion, final tax invoice issuance, account
+  access, and logging evidence.
+
+Next action: integrate lane outputs, then rerun `npm run verify:runtime-prereqs`
+before any deploy attempt.

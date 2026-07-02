@@ -9,8 +9,8 @@ Status: active
 - [x] Add Orders event validation.
 - [x] Add proforma/final issuance flow with blocked-record behavior.
 - [x] Add HTML document rendering and tokenized download endpoint.
-- [ ] Validate build/tests on remote.
-- [ ] Resolve runtime DB/Vault/Orders service-role blockers.
+- [x] Validate build/tests on remote.
+- [ ] Resolve runtime DB/Vault/dependency readiness blockers.
 - [ ] Deploy only after runtime blockers are closed.
 
 ## Goal 2: PDF And Durable Storage

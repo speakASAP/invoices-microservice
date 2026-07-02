@@ -6,15 +6,17 @@ status: active
 owner: Invoices owner
 created: 2026-07-02
 last_updated: 2026-07-02
-completeness_level: source-scaffold
+completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
-current_chunk: Initial service scaffold and contract plan
+current_chunk: Runtime integration gating and parallel rollout lanes
 blockers:
-  - [MISSING: production DB secret and database provisioning for invoices]
-  - [MISSING: runtime projection and verification of ORDERS_SERVICE_TOKEN for invoices-microservice reads]
-  - [MISSING: seller legal identity and VAT configuration]
-  - [MISSING: Notifications service token/channel policy for invoice delivery through channelKey invoices.documents]
-  - [MISSING: PDF attachment/storage contract]
+  - [MISSING: Vault path secret/prod/invoices-microservice with core runtime key names]
+  - [MISSING: invoices database provisioning or owner-approved DB_AUTO_CREATE=true first deploy]
+  - [MISSING: Orders, Payments, and Notifications desired replicas > 0 for runtime smoke]
+  - [MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]
+  - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
+  - [MISSING: seller legal identity and VAT configuration before legal issuance]
+  - [MISSING: PDF attachment/storage contract for immutable tax documents]
 ```
 
 ## Current Checkpoint
@@ -96,6 +98,20 @@ issuance prerequisites. The core ExternalSecret no longer requires
 `invoices-microservice-seller-secret` as an optional secret. Missing seller
 legal data still blocks invoice issuance through `seller_legal_config_missing`,
 but it no longer blocks a fail-closed service deployment.
+
+2026-07-02 continuation: Reconfirmed cross-service source contracts from live
+remote repositories. Orders source accepts `x-service-name:
+invoices-microservice` with `INVOICES_INTERNAL_SERVICE_TOKEN`/
+`INVOICES_ORDERS_SERVICE_TOKEN` for the order read boundary. Payments source
+exposes `GET /payments/status/by-order-id` behind `X-API-Key` with the
+`payments:read` scope; the runtime value must exist in both invoices Vault
+configuration and Payments `API_KEYS`/`PAYMENT_API_KEY_SCOPES`. Notifications
+source commit `8a6b7ed feat: allow invoices notifications service actor`
+accepts `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` as an `invoices-microservice`
+machine actor and projects it from
+`secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN`; deployment is
+still gated until that Vault key exists and `invoices.documents` channel policy
+is configured.
 
 ## Preserved Intent
 

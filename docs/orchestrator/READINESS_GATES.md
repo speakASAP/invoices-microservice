@@ -14,7 +14,9 @@
 - `DB_AUTO_CREATE` is either explicitly owner-approved for first deploy or the
   `invoices` database already exists.
 - Orders accepts `invoices-microservice` internal read role.
-- Seller legal fields are configured.
+- Payments accepts the invoices API key with `payments:read` scope.
+- Seller legal fields are configured before legal issuance; missing seller
+  legal data must fail closed and must not block service startup.
 - RabbitMQ queue binding is configured.
 - Notifications delivery policy is configured or explicitly disabled.
 - Public document base URL is configured.

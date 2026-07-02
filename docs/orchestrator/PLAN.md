@@ -25,10 +25,11 @@ provider, or address payloads for invoice generation.
 
 | Workstream | Status | Owner | Scope | Validation |
 | --- | --- | --- | --- | --- |
-| A service core | active | invoices worker | `src/invoices`, DB entities, HTML documents | `npm run build`, `npm test` |
-| B Orders read role | ready_parallel | Orders integration owner | add invoices service actor/read role without touching event payloads | Orders build + focused auth/read smoke |
-| C runtime platform | dependency-gated | platform/secrets owner | DB, Vault, K8s manifests, ingress | dry-run + rollout after approval |
-| D delivery/PDF | dependency-gated | invoices/notifications owner | PDF/storage + Notifications delivery | focused delivery validation |
-| E account access | active | invoices account owner | Auth-validated customer invoice list and download-link rotation | focused account tests + contract verifier |
+| A service core | source-ready | invoices worker | `src/invoices`, DB entities, HTML documents | `npm run build`, `npm test`, `npm run verify:contracts` |
+| B Orders read role | source-ready-runtime-gated | Orders integration owner | invoices service actor/read role without event payload expansion | Orders source evidence plus runtime token projection |
+| C runtime provisioning | active_parallel | platform/secrets owner | Vault path, invoices DB, dependency replicas, deploy preflight | `npm run verify:runtime-prereqs` after provisioning |
+| D Notifications delivery policy | active_parallel | notifications owner | invoices service actor plus `invoices.documents` channel policy; no provider send | validate endpoint/source tests; no-send evidence |
+| E account access | source-ready-runtime-gated | invoices account owner | Auth-validated customer invoice list and download-link rotation | focused account tests + contract verifier |
+| F PDF/durable storage | dependency-gated | invoices/storage owner | immutable PDF object references and tax-document attachment policy | storage contract + focused PDF validation |
 
-Shared contract owner: main coordinator. Merge order: A -> B -> C -> D.
+Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications channel policy -> final smoke -> deploy.
