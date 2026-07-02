@@ -84,6 +84,12 @@ token hashes, customer addresses, and internal event fields. This is an
 email-scoped interim contract because stable Auth subject-to-order matching is
 still `[MISSING]`.
 
+2026-07-02 continuation: Tightened the live runtime preflight so required
+Deployments and StatefulSets must have desired replicas greater than zero. The
+current live blocker set is now explicit: missing Vault path, missing
+`invoices` database, and Orders/Payments/Notifications scaled to zero; Logging
+and RabbitMQ are ready.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains

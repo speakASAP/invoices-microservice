@@ -16,6 +16,7 @@ const configMap = read('k8s/configmap.yaml');
 const deployment = read('k8s/deployment.yaml');
 const externalSecret = read('k8s/external-secret.yaml');
 const consumer = read('src/events/rabbitmq-orders.consumer.ts');
+const runtimePrereqs = read('scripts/check-runtime-prereqs.sh');
 
 assert(dbModule.includes('ensureDatabaseExistsFromEnv'), 'database module does not run DB bootstrap gate');
 assert(dbBootstrap.includes("env.DB_AUTO_CREATE !== 'true'"), 'DB bootstrap is not opt-in');
@@ -26,5 +27,6 @@ assert(configMap.includes('ORDERS_EVENTS_CONSUMER_ENABLED: "false"'), 'Orders ev
 assert(deployment.includes('secretRef:') && deployment.includes('invoices-microservice-secret'), 'deployment does not project invoices secret');
 assert(externalSecret.includes('apiVersion: external-secrets.io/v1'), 'ExternalSecret apiVersion must match the live cluster CRD');
 assert(consumer.includes("process.env.ORDERS_EVENTS_CONSUMER_ENABLED !== 'true'"), 'RabbitMQ consumer is not fail-closed by config');
+assert(runtimePrereqs.includes('desired replicas > 0'), 'runtime prereq gate must reject scaled-to-zero dependencies');
 
 console.log('Runtime readiness source verification passed');

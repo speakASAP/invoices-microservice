@@ -171,3 +171,18 @@ Validation:
 - `npm test`: passed, 4 suites / 12 tests.
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
+
+## 2026-07-02 - Runtime Preflight Scaled-Zero Guard
+
+Tightened `npm run verify:runtime-prereqs` so required Deployments and
+StatefulSets must have desired replicas greater than zero before they can be
+reported ready. This prevents a dependency scaled to `0/0` from being treated
+as a usable Orders/Payments/Notifications smoke-test dependency.
+
+Current live preflight evidence:
+
+- `[MISSING: Vault path secret/prod/invoices-microservice]`
+- `[MISSING: database invoices]`
+- `[MISSING: deployment orders-microservice desired replicas > 0]`
+- `[MISSING: deployment payments-microservice desired replicas > 0]`
+- `[MISSING: deployment notifications-microservice desired replicas > 0]`

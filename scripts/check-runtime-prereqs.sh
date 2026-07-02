@@ -120,6 +120,16 @@ check_deployment_ready() {
     return
   fi
 
+  if ! [[ "$desired" =~ ^[0-9]+$ ]]; then
+    unknown "deployment ${name} desired replica count"
+    return
+  fi
+
+  if [ "$desired" -lt 1 ]; then
+    missing "deployment ${name} desired replicas > 0"
+    return
+  fi
+
   ready="$(kubectl get deployment -n "$NAMESPACE" "$name" -o jsonpath='{.status.readyReplicas}' 2>/dev/null || true)"
   ready="${ready:-0}"
 
@@ -138,6 +148,16 @@ check_statefulset_ready() {
   desired="$(kubectl get statefulset -n "$NAMESPACE" "$name" -o jsonpath='{.spec.replicas}' 2>/dev/null || true)"
   if [ -z "$desired" ]; then
     missing "statefulset ${name} exists in namespace ${NAMESPACE}"
+    return
+  fi
+
+  if ! [[ "$desired" =~ ^[0-9]+$ ]]; then
+    unknown "statefulset ${name} desired replica count"
+    return
+  fi
+
+  if [ "$desired" -lt 1 ]; then
+    missing "statefulset ${name} desired replicas > 0"
     return
   fi
 
