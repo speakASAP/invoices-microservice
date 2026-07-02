@@ -13,7 +13,7 @@ blockers:
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
   - [MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
   - [MISSING: final-smoke prerequisite verifier passing in live runtime]
-  - [MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]
+  - [MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]
   - [MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]
   - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
 ```
@@ -314,6 +314,21 @@ Catalog/Warehouse fixture ids before creating a synthetic central Orders row,
 then reads the Orders snapshot to assert `customer.authSubject` persistence.
 Default preflight proved `mutation=false` and blocked only on missing approval
 inputs. Runtime proof remains `[MISSING]` until the approved smoke is executed.
+
+2026-07-02 continuation: Deployed the already validated FlipFlop
+auth-subject forwarding runtime marker to `flipflop-order-service` without
+creating a production order. The normal service Dockerfile path was blocked by
+npm registry `ETIMEDOUT`, so the deployment used a patch image based on the
+current live `localhost:5000/flipflop-order-service:latest` image and overlaid
+the built `services/order-service/dist`, `services/order-service/src`, and
+`shared/dist` artifacts from commit `23b22e0`. Rollout completed for
+`deployment/flipflop-order-service`; live pod grep found
+`authSubject: this.isUuid(user?.id) ? user.id : undefined` in the order-service
+runtime, public FlipFlop `/` and `/api/products?limit=1` returned HTTP 200, and
+the guarded smoke still failed closed with `mutation=false` and only
+approval/confirmation env blockers. The remaining FlipFlop gate is now the
+owner-approved synthetic create/read smoke that proves persisted
+`customer.authSubject` in a central Orders snapshot.
 
 ## Preserved Intent
 
