@@ -597,6 +597,35 @@ Current invoices pre-consumer gate:
   legal data exists and the guarded enable script is allowed to run.
 
 
+## 2026-07-02 - Notifications Immutable Deploy Hardening
+
+Hardened the related Notifications delivery service so invoice document
+readiness is less likely to regress through stale `:latest` image behavior:
+
+- `notifications-microservice` commit `dc78446 fix: pin notifications deploy to immutable image tag`
+  changes `scripts/deploy.sh` to set the Kubernetes deployment image to the
+  immutable build tag.
+- Notifications deployment docs now describe immutable image tags and explicit
+  repinning if runtime ever drifts back to `:latest`.
+- Live Notifications remains pinned to
+  `localhost:5000/notifications-microservice:f855764`.
+- Live `./scripts/check-invoices-documents-readiness.sh` passes for proforma
+  and final invoice validation with HTTP 201, `mutation=false`, and
+  `providerCall=false`.
+
+Validation in `notifications-microservice`:
+
+- `bash -n scripts/deploy.sh`: passed.
+- `npm run build`: passed.
+- `npm test -- --runInBand src/auth/jwt-roles.guard.spec.ts src/notifications/channel-registry.service.spec.ts src/notifications/notifications.service.spec.ts`: passed, 3 suites / 12 tests.
+- `npm test -- --runInBand`: passed, 7 suites / 32 tests.
+- `git diff --check`: passed.
+
+No Notifications deploy, `/notifications/send`, provider dispatch,
+`channel_registry` mutation, or customer contact was run for this source
+hardening.
+
+
 ## 2026-07-02 - Logging Contract Hardening
 
 Added test-covered source evidence for the Logging integration:

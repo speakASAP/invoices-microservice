@@ -230,6 +230,17 @@ for proforma and final with `mutation=false` and `providerCall=false`.
 `[MISSING: seller legal secret invoices-microservice-seller-secret]` while the
 Orders consumer remains intentionally disabled.
 
+2026-07-02 continuation: Hardened the related Notifications deploy source so
+future invoice delivery validations do not regress to stale `:latest` image
+behavior. Notifications commit `dc78446 fix: pin notifications deploy to
+immutable image tag` changes `scripts/deploy.sh` to set the Kubernetes
+deployment image to the immutable build tag and updates its deployment docs.
+Validation in `notifications-microservice` passed: `bash -n scripts/deploy.sh`,
+`npm run build`, focused auth/channel/notification tests, full `npm test
+-- --runInBand`, `git diff --check`, and live
+`./scripts/check-invoices-documents-readiness.sh`. No notification send or
+provider call was run.
+
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
 consumer enablement, seller legal secret, Payments `payments:read` scope for
