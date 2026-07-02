@@ -17,7 +17,8 @@
     "verify:consumer-enable-prereqs": "ALLOW_CONSUMER_DISABLED=true bash scripts/check-final-smoke-prereqs.sh",
     "verify:seller-legal-source": "VERIFY_ONLY=true bash scripts/sync-seller-legal-secret.sh",
     "runtime:sync-seller-legal": "bash scripts/sync-seller-legal-secret.sh",
-    "runtime:enable-orders-consumer": "bash scripts/enable-orders-consumer-for-final-smoke.sh"
+    "runtime:enable-orders-consumer": "bash scripts/enable-orders-consumer-for-final-smoke.sh",
+    "runtime:run-final-smoke-fixture": "bash scripts/run-final-smoke-fixture.sh"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.1",

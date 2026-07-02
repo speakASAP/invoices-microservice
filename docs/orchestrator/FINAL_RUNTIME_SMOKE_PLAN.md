@@ -263,6 +263,14 @@ creates a central Orders UUID, preserves/cleans Warehouse reservation state,
 creates a matching Payments snapshot, and completes payment without provider or
 customer-contact mutation]`.
 
+Create the approved synthetic fixture only through the guarded executor, which
+omits `customer.email` to keep Notifications in no-send mode and writes a
+completed `invoice` payment snapshot without provider dispatch:
+
+```bash
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && FINAL_SMOKE_APPROVED=true npm run runtime:run-final-smoke-fixture'
+```
+
 After the approved synthetic fixture has created the central Orders UUID and
 Payments has completed the matching fixture payment, capture automated
 evidence without printing secrets, raw customer snapshots, document bodies, PDF
@@ -505,7 +513,7 @@ Merge/order of operations:
 
 ## Open Blockers
 
-- `[MISSING: approved synthetic fixture executor that creates a central Orders UUID, preserves/cleans Warehouse reservation state, creates a matching Payments snapshot, and completes payment without provider or customer-contact mutation]`
+- Source-ready executor: `npm run runtime:run-final-smoke-fixture` creates a synthetic internal Orders/Payments fixture with `FINAL_SMOKE_APPROVED=true`, no `customer.email`, `providerCall=false`, and no Notifications `/send` precondition. Runtime use remains approval-gated and must be followed by `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence`.
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
 - `[MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]`

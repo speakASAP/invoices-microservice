@@ -24,6 +24,7 @@ const consumerEnableScript = read('scripts/enable-orders-consumer-for-final-smok
 const sellerSyncScript = read('scripts/sync-seller-legal-secret.sh');
 const sellerExternalSecret = read('k8s/seller-external-secret.yaml');
 const finalSmokeEvidenceScript = read('scripts/check-final-smoke-evidence.sh');
+const finalSmokeFixtureScript = read('scripts/run-final-smoke-fixture.sh');
 
 assert(dbModule.includes('ensureDatabaseExistsFromEnv'), 'database module does not run DB bootstrap gate');
 assert(dbBootstrap.includes("env.DB_AUTO_CREATE !== 'true'"), 'DB bootstrap is not opt-in');
@@ -42,6 +43,7 @@ assert(!externalSecret.includes('INVOICE_SELLER_NAME'), 'runtime ExternalSecret 
 assert(!runtimePrereqs.includes('INVOICE_SELLER_NAME'), 'runtime prereq gate must not require seller legal data for service startup');
 assert(packageJson.includes('verify:final-smoke-prereqs'), 'final smoke prereq verifier script is not registered');
 assert(packageJson.includes('verify:final-smoke-evidence'), 'final smoke evidence verifier script is not registered');
+assert(packageJson.includes('runtime:run-final-smoke-fixture'), 'final smoke fixture runtime script is not registered');
 assert(packageJson.includes('verify:consumer-enable-prereqs'), 'consumer enable preflight script is not registered');
 assert(packageJson.includes('verify:seller-legal-source'), 'seller legal source verifier script is not registered');
 assert(packageJson.includes('runtime:sync-seller-legal'), 'seller legal sync runtime script is not registered');
@@ -55,6 +57,10 @@ assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smok
 assert(finalSmokePrereqs.includes("RABBITMQ_URL uses cluster-reachable broker"), "final smoke verifier must reject non-cluster RabbitMQ URLs");
 assert(finalSmokePrereqs.includes("INVOICES_ORDERS_QUEUE is configured"), "final smoke verifier must check the invoices orders queue name");
 assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');
+assert(finalSmokeFixtureScript.includes('FINAL_SMOKE_APPROVED') && finalSmokeFixtureScript.includes('customerContact') && finalSmokeFixtureScript.includes('providerCall'), 'final smoke fixture must be approval-gated and record no provider/customer-contact intent');
+assert(finalSmokeFixtureScript.includes('orders.order.created.v1') && finalSmokeFixtureScript.includes('orders.order.paid.v1'), 'final smoke fixture must publish the created and paid order lifecycle triggers');
+assert(finalSmokeFixtureScript.includes('PAYMENT_APPLICATION_ID') && finalSmokeFixtureScript.includes('PAYMENT_ID'), 'final smoke fixture must print the payment evidence identifiers');
+assert(finalSmokeFixtureScript.includes('cleanup_fixture'), 'final smoke fixture must clean up partial rows on failure');
 assert(finalSmokeEvidenceScript.includes('ORDER_ID'), 'final smoke evidence verifier must require ORDER_ID');
 assert(finalSmokeEvidenceScript.includes('SKIP_FINAL_SMOKE_PREREQS'), 'final smoke evidence verifier must run strict prereqs by default with an explicit skip escape hatch');
 assert(finalSmokeEvidenceScript.includes('invoice_documents') && finalSmokeEvidenceScript.includes('invoice_event_records'), 'final smoke evidence verifier must inspect invoice DB evidence');
