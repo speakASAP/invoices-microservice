@@ -163,6 +163,14 @@ as quoted psql variables. Live recheck confirms
 invoices-microservice/transactional`; final smoke remains blocked only by
 missing invoices deployment/config/consumer switch and seller legal secret.
 
+2026-07-02 continuation: First deploy attempt built and pushed image
+`localhost:5000/invoices-microservice:2d3a7d6`, created the ConfigMap,
+ExternalSecret, Deployment, Service, Ingress, and TLS certificate, but rollout
+failed because the Docker image started `node dist/main.js` while the Nest build
+emits `dist/src/main.js`. The Dockerfile was corrected and
+`verify-runtime-readiness` now asserts the container entrypoint matches the
+build output.
+
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
 consumer enablement, seller legal secret, Payments `payments:read` scope for

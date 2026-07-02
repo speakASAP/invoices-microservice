@@ -15,6 +15,7 @@ const dbBootstrap = read('src/database-bootstrap.ts');
 const configMap = read('k8s/configmap.yaml');
 const deployment = read('k8s/deployment.yaml');
 const externalSecret = read('k8s/external-secret.yaml');
+const dockerfile = read('Dockerfile');
 const consumer = read('src/events/rabbitmq-orders.consumer.ts');
 const runtimePrereqs = read('scripts/check-runtime-prereqs.sh');
 const finalSmokePrereqs = read('scripts/check-final-smoke-prereqs.sh');
@@ -40,5 +41,6 @@ assert(finalSmokePrereqs.includes('kubectl exec -i'), 'final smoke verifier must
 assert(finalSmokePrereqs.includes('INVOICE_SELLER_NAME'), 'final smoke verifier must check seller legal data');
 assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smoke verifier must check Orders consumer enablement');
 assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');
+assert(dockerfile.includes('dist/src/main.js'), 'Docker image must start the built Nest entrypoint at dist/src/main.js');
 
 console.log('Runtime readiness source verification passed');

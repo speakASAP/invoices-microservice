@@ -449,6 +449,28 @@ Validation:
 - Remaining final-smoke blockers are only deployment/config/consumer switch and
   seller legal secret.
 
+## 2026-07-02 - First Deploy Attempt And Docker Entrypoint Fix
+
+Ran `./scripts/deploy.sh` after core runtime prerequisites passed. The deploy
+script completed build, Jest, contract verification, runtime-readiness, and
+runtime-prereq checks, built and pushed image
+`localhost:5000/invoices-microservice:2d3a7d6`, and created the ConfigMap,
+ExternalSecret, Deployment, Service, Ingress, and TLS certificate.
+
+Rollout failed at the health gate because both created pods crashed with:
+
+```text
+Error: Cannot find module '/app/dist/main.js'
+```
+
+Root cause: Nest build output is `dist/src/main.js`, but the Dockerfile started
+`dist/main.js`. Updated the Dockerfile to start `dist/src/main.js` and added a
+`verify-runtime-readiness` assertion so the image entrypoint cannot drift back
+silently.
+
+Validation pending in this edit: rebuild, tests, runtime verifiers, redeploy,
+rollout status, in-pod health, and final-smoke prerequisite recheck.
+
 
 ## 2026-07-02 - Logging Contract Hardening
 
