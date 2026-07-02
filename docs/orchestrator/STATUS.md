@@ -91,3 +91,58 @@ Deployment remains blocked because runtime prerequisites are still not closed:
 - `[MISSING: invoices database exists or owner-approved DB_AUTO_CREATE=true first deploy]`
 - `[MISSING: secret/prod/invoices-microservice values for DB password, internal token, Orders token, Payments API key, Notifications token, and seller legal fields]`
 - `[MISSING: core dependencies ready for deploy smoke: Orders, Payments, Notifications, Logging, RabbitMQ]`
+
+## 2026-07-02 - Non-Secret Runtime Preflight
+
+Added `npm run verify:runtime-prereqs` for the live Alfares deploy gate. The
+script checks the Vault path and required key names without printing secret
+values, checks whether the `invoices` database exists through the running
+Postgres pod env, and verifies core workload readiness for Orders, Payments,
+Notifications, Logging, and RabbitMQ. `scripts/deploy.sh` runs this gate before
+Docker build/push and Kubernetes apply.
+
+Source validation:
+
+- `npm run build`: passed.
+- `npm test`: passed, 3 suites / 6 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `kubectl apply --dry-run=server -f k8s/configmap.yaml -f k8s/external-secret.yaml -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/ingress.yaml -n statex-apps`: passed.
+
+Live deploy preflight:
+
+- `npm run verify:runtime-prereqs`: failed as expected with explicit runtime
+  blockers and no secret values printed.
+- `./scripts/deploy.sh`: failed at `verify:runtime-prereqs` before Docker
+  build/push or Kubernetes apply.
+- `[MISSING: Vault path secret/prod/invoices-microservice]`
+- `[MISSING: database invoices]`
+- `[MISSING: deployment orders-microservice ready 0/1]`
+- `[MISSING: deployment payments-microservice ready 0/1]`
+- `[MISSING: deployment notifications-microservice ready 0/1]`
+- `[MISSING: deployment logging-microservice ready 0/1]`
+- RabbitMQ was ready `1/1`.
+
+## 2026-07-02 - Parallel Contract And Delivery Sweep
+
+Read-only sub-agent sweeps produced these current contracts:
+
+- Orders source produces `orders.order.created.v1` on order creation.
+- Payments reports completed payment status to Orders; Orders emits
+  `orders.order.paid.v1` only when the previous status was not already paid.
+- Orders events remain trigger-only. Invoices must fetch full order snapshots
+  through `GET /api/orders/:id` using the invoices service identity.
+- Notifications is the current delivery transport through
+  `POST /notifications/send` with `service=invoices-microservice`,
+  `purpose=transactional`, and `channelKey=invoices.documents`.
+- Invoices already has internal document read and download-link rotation.
+- Customer account invoice listing/download is not implemented and should stay
+  separate from Notifications/runtime provisioning work.
+
+Additional blockers:
+
+- `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
+- `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
+- `[MISSING: customer account invoice listing/download API]`
+- `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+- `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`

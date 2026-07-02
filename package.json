@@ -10,7 +10,8 @@
     "start:prod": "node dist/main",
     "test": "jest --runInBand",
     "verify:contracts": "node scripts/verify-invoice-contracts.js",
-    "verify:runtime-readiness": "node scripts/verify-runtime-readiness.js"
+    "verify:runtime-readiness": "node scripts/verify-runtime-readiness.js",
+    "verify:runtime-prereqs": "bash scripts/check-runtime-prereqs.sh"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.1",

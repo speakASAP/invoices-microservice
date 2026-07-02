@@ -16,6 +16,8 @@ cd "$PROJECT_ROOT"
 npm run build
 npm test
 npm run verify:contracts
+npm run verify:runtime-readiness
+npm run verify:runtime-prereqs
 
 docker build -t "$IMAGE" -t "$IMAGE_LATEST" "$PROJECT_ROOT"
 docker push "$IMAGE"

@@ -11,9 +11,9 @@ current_goal: Goal 1 Invoices Issuance MVP
 current_chunk: Initial service scaffold and contract plan
 blockers:
   - [MISSING: production DB secret and database provisioning for invoices]
-  - [MISSING: Orders internal service token and Orders allowlist entry for invoices-microservice reads]
+  - [MISSING: runtime projection and verification of ORDERS_SERVICE_TOKEN for invoices-microservice reads]
   - [MISSING: seller legal identity and VAT configuration]
-  - [MISSING: Notifications service token/channel policy for invoice delivery]
+  - [MISSING: Notifications service token/channel policy for invoice delivery through channelKey invoices.documents]
   - [MISSING: PDF attachment/storage contract]
 ```
 
@@ -57,6 +57,23 @@ Ingress. Deployment remains blocked by missing runtime provisioning and core
 dependency readiness: invoices database/DB auto-create decision, Vault values
 under `secret/prod/invoices-microservice`, and ready Orders/Payments/
 Notifications/Logging/RabbitMQ pods for smoke validation.
+
+2026-07-02 continuation: Added `npm run verify:runtime-prereqs` as the live
+non-secret deploy preflight and wired it into `scripts/deploy.sh` before image
+build/push and Kubernetes apply. It checks Vault path/key presence without
+printing values, checks the `invoices` database through the Postgres pod env,
+and checks core dependency readiness. Current live result remains blocked by
+missing `secret/prod/invoices-microservice`, missing `invoices` database, and
+not-ready Orders/Payments/Notifications/Logging pods. `./scripts/deploy.sh`
+now stops at that gate before Docker or Kubernetes mutation.
+
+2026-07-02 continuation: Parallel read-only sub-agent sweeps confirmed that
+Orders source currently produces both invoice trigger events:
+`orders.order.created.v1` on order creation and `orders.order.paid.v1` after
+Payments reports completed status into Orders. Delivery should use
+Notifications `POST /notifications/send` with `channelKey=invoices.documents`;
+customer account invoice listing/download remains dependency-gated and should
+be handled as a separate account-access lane.
 
 ## Preserved Intent
 
