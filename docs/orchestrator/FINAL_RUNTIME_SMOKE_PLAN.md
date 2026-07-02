@@ -34,11 +34,13 @@ the runtime blockers below are resolved.
 Collected on 2026-07-02 over `ssh alfares`.
 
 - `invoices-microservice`: current source checkpoint is
-  `13f4025 docs: record auth subject smoke gate`; repo is ahead of origin by
-  20 commits.
-- `notifications-microservice`: clean `main`, ahead of origin by 2 commits,
-  `676b662 test: define invoices notification readiness contract` on top of
-  `8a6b7ed feat: allow invoices notifications service actor`.
+  `5a37c9c docs: update FINAL_RUNTIME_SMOKE_PLAN with current state of invoices-microservice and runtime prerequisites`;
+  the remote branch is aligned with `origin/main` before this local runbook
+  evidence refresh.
+- `notifications-microservice`: current runtime source is
+  `dc78446 fix: pin notifications deploy to immutable image tag` on
+  `codex/notifications-orders-lifecycle-integration`; live pod image digest is
+  `sha256:4e12aef822773d9ffec333db6417403ac6b5a73cf855ab8e25fb2bcb664f25a1`.
 - `npm run verify:contracts`: passed in `invoices-microservice`.
 - `npm run verify:runtime-readiness`: passed in `invoices-microservice`.
 - `npm run verify:runtime-prereqs`: passed:
@@ -52,6 +54,19 @@ Collected on 2026-07-02 over `ssh alfares`.
   - Notifications ready `1/1`.
   - Logging ready `1/1`.
   - RabbitMQ ready `1/1`.
+- `npm run verify:final-smoke-prereqs`: failed with the remaining strict
+  final-smoke gates:
+  - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
+  - `[MISSING: seller legal secret invoices-microservice-seller-secret]`
+  - Payments API key registration, Notifications token projection,
+    `invoices.documents` channel policy, and Notifications no-send validation
+    passed.
+- `npm run verify:consumer-enable-prereqs`: failed only on
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, while
+  allowing `ORDERS_EVENTS_CONSUMER_ENABLED=false` for the pre-enable gate.
+- `npm run verify:seller-legal-source`: failed on
+  `[MISSING: Vault path secret/prod/invoices-microservice-seller]`; legal
+  issuer data must be provided by the owner and must not be invented.
 - Orders verifier: `npm run verify:invoices-read-boundary` passed.
 - Orders verifier: `npm run verify:event-contracts` passed.
 - Payments focused tests:
@@ -202,10 +217,12 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
 `verify:final-smoke-prereqs` passes. Current live state has
 `verify:runtime-prereqs` passing while `verify:final-smoke-prereqs` still fails
-closed on consumer switch and seller legal secret. Invoices deployment, public
-base URL, Payments key scope, Notifications token, Notifications channel policy,
-and Notifications no-send validation gates pass. If either runtime verifier
-fails in the final run, stop.
+closed on consumer switch and seller legal secret. The pre-enable gate
+`verify:consumer-enable-prereqs` allows the consumer switch to stay disabled and
+currently fails only on the missing seller legal secret. Invoices deployment,
+public base URL, Payments key scope, Notifications token, Notifications channel
+policy, and Notifications no-send validation gates pass. If either runtime
+verifier fails in the final run, stop.
 
 Before enabling the Orders consumer, run:
 
