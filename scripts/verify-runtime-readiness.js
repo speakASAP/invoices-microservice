@@ -28,5 +28,8 @@ assert(deployment.includes('secretRef:') && deployment.includes('invoices-micros
 assert(externalSecret.includes('apiVersion: external-secrets.io/v1'), 'ExternalSecret apiVersion must match the live cluster CRD');
 assert(consumer.includes("process.env.ORDERS_EVENTS_CONSUMER_ENABLED !== 'true'"), 'RabbitMQ consumer is not fail-closed by config');
 assert(runtimePrereqs.includes('desired replicas > 0'), 'runtime prereq gate must reject scaled-to-zero dependencies');
+assert(deployment.includes('invoices-microservice-seller-secret') && deployment.includes('optional: true'), 'seller legal secret must be optional for fail-closed deploys');
+assert(!externalSecret.includes('INVOICE_SELLER_NAME'), 'runtime ExternalSecret must not require seller legal data for service startup');
+assert(!runtimePrereqs.includes('INVOICE_SELLER_NAME'), 'runtime prereq gate must not require seller legal data for service startup');
 
 console.log('Runtime readiness source verification passed');

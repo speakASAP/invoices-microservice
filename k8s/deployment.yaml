@@ -33,6 +33,9 @@ spec:
                 name: invoices-microservice-config
             - secretRef:
                 name: invoices-microservice-secret
+            - secretRef:
+                name: invoices-microservice-seller-secret
+                optional: true
           startupProbe:
             httpGet:
               path: /health

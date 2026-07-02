@@ -194,3 +194,23 @@ Validation:
   scaled-zero blockers and no secret values printed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
+
+## 2026-07-02 - Optional Seller Legal Runtime Secret
+
+Split startup/runtime prerequisites from issuance/legal prerequisites:
+
+- `invoices-microservice-secret` now contains only deploy-critical runtime
+  keys: DB password, internal service token, Orders token, Payments API key,
+  and Notifications token.
+- `invoices-microservice-seller-secret` is projected as optional. If seller
+  legal fields are missing, invoice issuance still fails closed with
+  `seller_legal_config_missing`, but the service can start once core runtime
+  prerequisites are ready.
+- `k8s/seller-secret.yaml.example` documents the seller legal keys without
+  inventing production values.
+
+Validation:
+
+- `npm run verify:runtime-readiness`: passed.
+- server-side Kubernetes dry-run for ConfigMap, ExternalSecret, Deployment,
+  Service, and Ingress: passed.

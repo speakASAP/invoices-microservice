@@ -90,6 +90,13 @@ current live blocker set is now explicit: missing Vault path, missing
 `invoices` database, and Orders/Payments/Notifications scaled to zero; Logging
 and RabbitMQ are ready.
 
+2026-07-02 continuation: Split runtime startup prerequisites from seller legal
+issuance prerequisites. The core ExternalSecret no longer requires
+`INVOICE_SELLER_*` values, and the Deployment reads
+`invoices-microservice-seller-secret` as an optional secret. Missing seller
+legal data still blocks invoice issuance through `seller_legal_config_missing`,
+but it no longer blocks a fail-closed service deployment.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains
