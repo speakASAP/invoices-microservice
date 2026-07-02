@@ -9,7 +9,7 @@ Exceptions:
 - `[MISSING: seller legal identity and VAT configuration]`
 - `[MISSING: Notifications service token/channel policy for invoice delivery through channelKey invoices.documents]`
 - `[MISSING: external object-storage/attachment contract for PDF tax documents]`
-- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
 Coding may proceed for source-only MVP because the implementation fails closed
 when runtime/legal data is missing and deployment remains blocked.

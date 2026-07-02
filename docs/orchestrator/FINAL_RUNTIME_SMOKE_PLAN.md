@@ -124,7 +124,7 @@ ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run veri
      snapshot includes `customer.id`, `customer.authUserId`, `customer.subject`,
      `customer.sub`, `customerId`, `customerUserId`, `authUserId`, or `userId`.
    - Legacy account access still falls back to `orderSnapshot.customer.email`.
-   - `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+   - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
 9. Payments central-order gate:
    - Invoices Vault has `PAYMENTS_API_KEY`.
@@ -418,5 +418,5 @@ Merge/order of operations:
 - `[MISSING: external object-storage/attachment policy if PDF links are insufficient for the delivery channel]`
 - `[MISSING: Notifications channel_registry row/policy for invoices.documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 - `[MISSING: proof every active checkout/payment path uses central Orders UUIDs]`

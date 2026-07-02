@@ -143,7 +143,7 @@ Additional blockers:
 
 - `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
 - `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
-- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
 
 ## 2026-07-02 - Account Invoice Access Source Lane
@@ -161,7 +161,7 @@ Added source-level customer account access inside `invoices-microservice`:
   document HTML, customer address, or blocked internals are returned.
 
 The lane remains source-only until runtime blockers close. It scopes by email
-because `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+because `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 is still open.
 
 Validation:
@@ -367,7 +367,7 @@ touching the currently dirty Orders/Auth repositories:
 
 Remaining blocker:
 
-- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
 Validation:
 
@@ -406,6 +406,30 @@ non-mutating activation plan for the source-ready invoices service. It splits
 runtime work into approval-gated Vault, database, Payments key, Notifications
 delivery, seller legal, deploy switch, and final smoke lanes with explicit
 forbidden actions and validation commands.
+
+Validation:
+
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.
+
+
+## 2026-07-02 - Orders Auth Subject Source Proof Integrated
+
+Integrated read-only sub-agent findings and Orders source follow-up:
+
+- Orders source now has commit `c4f1332 feat: persist auth subject in order
+  snapshots`.
+- `orders.create.v1` accepts a stable Auth subject and persists normalized
+  `customer.authUserId`/`customer.subject`.
+- Orders event contracts remain trigger-only; no customer identity was added to
+  RabbitMQ lifecycle events.
+- Invoices account access already matches `customer.authUserId` and
+  `customer.subject` in stored order snapshots.
+
+Remaining blocker:
+
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 
 Validation:
 

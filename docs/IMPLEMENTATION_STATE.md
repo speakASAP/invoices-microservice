@@ -146,8 +146,9 @@ printing secret values.
 listing and customer download-link rotation match stored order snapshots by
 customer Auth subject fields first and keep email fallback for legacy rows.
 This closes the invoices-side source gap, but final smoke remains gated on
-`[MISSING: Orders/Auth producer proof that new order snapshots populate a
-stable customer Auth subject]`. Validation passed: focused account tests,
+`[MISSING: runtime proof that deployed Orders includes c4f1332 and
+authenticated channel create callers pass Auth subject into new order
+snapshots]`. Validation passed: focused account tests,
 `npm run build`, full `npm test`, `npm run verify:contracts`,
 `npm run verify:runtime-readiness`, and `git diff --check`.
 
@@ -159,6 +160,14 @@ fail-open so invoice issuance is not blocked by transient observability
 outages. Validation passed: focused logger tests, `npm run build`, full
 `npm test`, `npm run verify:contracts`, `npm run verify:runtime-readiness`,
 and `git diff --check`.
+
+2026-07-02 continuation: Cross-repo source proof for Auth subject snapshots is
+now available in `orders-microservice` commit `c4f1332 feat: persist auth
+subject in order snapshots`. Orders accepts and persists normalized
+`customer.authUserId`/`customer.subject` while keeping RabbitMQ events
+trigger-only. Invoices already matches those fields for account access.
+Remaining blocker is runtime proof that the deployed Orders workload includes
+that commit and authenticated channel create callers send the Auth subject.
 
 ## Preserved Intent
 

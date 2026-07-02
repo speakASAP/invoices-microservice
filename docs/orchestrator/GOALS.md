@@ -32,8 +32,10 @@ Status: dependency-gated
       wallet APIs exist.
 - [x] Provide source-level account-scoped invoice listing/download by Auth
       validated subject with normalized email fallback.
-- [ ] Prove Orders/Auth producer contract populates customer Auth subject in
-      order snapshots for new orders.
+- [x] Prove Orders source contract can populate customer Auth subject in
+      order snapshots for new orders (`orders-microservice` commit `c4f1332`).
+- [ ] Prove deployed Orders plus authenticated channel create callers pass Auth
+      subject into new order snapshots.
 
 ## Goal 4: Corrections And Credit Notes
 

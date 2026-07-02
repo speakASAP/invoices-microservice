@@ -105,5 +105,5 @@ Last observed on 2026-07-02:
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 - `[MISSING: external object-storage/attachment policy if PDF links are insufficient for the delivery channel]`
