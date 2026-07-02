@@ -136,14 +136,13 @@ Read-only sub-agent sweeps produced these current contracts:
   `POST /notifications/send` with `service=invoices-microservice`,
   `purpose=transactional`, and `channelKey=invoices.documents`.
 - Invoices already has internal document read and download-link rotation.
-- Customer account invoice listing/download is not implemented and should stay
-  separate from Notifications/runtime provisioning work.
+- Customer account invoice listing/download is now source-implemented and stays
+  separate from Notifications/runtime provisioning work until deploy.
 
 Additional blockers:
 
 - `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
 - `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
-- `[MISSING: customer account invoice listing/download API]`
 - `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
 
@@ -165,5 +164,10 @@ The lane remains source-only until runtime blockers close. It scopes by email
 because `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
 is still open.
 
-Validation pending: account access tests, build, contract verifier, runtime
-readiness verifier.
+Validation:
+
+- `npm test -- --runTestsByPath test/account-invoices.spec.ts`: passed, 6 tests.
+- `npm run build`: passed.
+- `npm test`: passed, 4 suites / 12 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.

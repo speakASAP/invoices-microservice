@@ -72,8 +72,8 @@ Orders source currently produces both invoice trigger events:
 `orders.order.created.v1` on order creation and `orders.order.paid.v1` after
 Payments reports completed status into Orders. Delivery should use
 Notifications `POST /notifications/send` with `channelKey=invoices.documents`;
-customer account invoice listing/download remains dependency-gated and should
-be handled as a separate account-access lane.
+customer account invoice listing/download should be handled separately from
+delivery/runtime provisioning work.
 
 2026-07-02 continuation: Added source-level account invoice access in
 `invoices-microservice`. `GET /invoices/account` and

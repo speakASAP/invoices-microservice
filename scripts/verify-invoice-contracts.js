@@ -27,7 +27,7 @@ assert(controller.includes("Get('invoices/account')"), 'customer account invoice
 assert(controller.includes("Post('invoices/account/:invoiceId/download-link')"), 'customer account download-link endpoint missing');
 assert(controller.includes("Get('invoices/:invoiceId/document.html')"), 'internal document read endpoint missing');
 assert(customerGuard.includes('/auth/validate'), 'customer account access must validate tokens through Auth');
-assert(service.includes("#>> '{customer,email}'"), 'customer account invoice access must scope by stored customer email');
+assert(service.includes("#>> \\'{customer,email}\\'"), 'customer account invoice access must scope by stored customer email');
 assert(service.includes('uq_invoice_documents_order_type') || read('src/migrations/20260702120000-CreateInvoicesTables.ts').includes('uq_invoice_documents_order_type'), 'order/type uniqueness missing');
 assert(docs.includes('Orders events remain trigger-only'), 'trigger-only Orders event plan missing');
 assert(docs.includes('account-scoped invoice listing'), 'account access plan missing');
