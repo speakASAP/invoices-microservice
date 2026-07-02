@@ -82,6 +82,24 @@ export class InvoiceDocument {
   @Column({ type: 'varchar', length: 255, nullable: true })
   documentFilename: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  documentObjectBucket: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  documentObjectKey: string | null;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  documentObjectSha256: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  documentObjectEtag: string | null;
+
+  @Column({ type: 'bigint', nullable: true })
+  documentObjectSize: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  documentStoredAt: Date | null;
+
   @Column({ type: 'varchar', length: 128, nullable: true })
   downloadTokenHash: string | null;
 

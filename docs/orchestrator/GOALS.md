@@ -24,8 +24,10 @@ Status: source-ready-runtime-gated
       PDF objects owned by invoices; direct Notifications attachments deferred.
 - [x] Store immutable DB-backed PDF bytes, checksum, MIME type, and filename.
 - [x] Deliver secure PDF download link through Notifications payloads.
+- [x] Add source-level nullable DB object-reference fields for future
+      off-database PDF storage.
 - [ ] Implement runtime MinIO/S3 bucket provisioning, service credentials,
-      retention policy, DB object-reference migration, upload/presign client,
+      retention policy, approved migration application, upload/presign client,
       and backfill/rollback plan after owner approval.
 
 ## Goal 3: Customer Account Access

@@ -59,6 +59,12 @@ export class CreateInvoicesTables20260702120000 implements MigrationInterface {
         "documentPdfSha256" varchar(64),
         "documentMimeType" varchar(100),
         "documentFilename" varchar(255),
+        "documentObjectBucket" varchar(255),
+        "documentObjectKey" text,
+        "documentObjectSha256" varchar(64),
+        "documentObjectEtag" varchar(255),
+        "documentObjectSize" bigint,
+        "documentStoredAt" timestamp,
         "downloadTokenHash" varchar(128),
         "blockedReason" text,
         "issuedAt" timestamp,
@@ -73,8 +79,15 @@ export class CreateInvoicesTables20260702120000 implements MigrationInterface {
     await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentPdfSha256" varchar(64)');
     await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentMimeType" varchar(100)');
     await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentFilename" varchar(255)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentObjectBucket" varchar(255)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentObjectKey" text');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentObjectSha256" varchar(64)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentObjectEtag" varchar(255)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentObjectSize" bigint');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentStoredAt" timestamp');
     await queryRunner.query('CREATE INDEX IF NOT EXISTS idx_invoice_documents_order_id ON invoice_documents ("orderId")');
     await queryRunner.query('CREATE INDEX IF NOT EXISTS idx_invoice_documents_status ON invoice_documents (status)');
+    await queryRunner.query('CREATE INDEX IF NOT EXISTS idx_invoice_documents_object_key ON invoice_documents ("documentObjectBucket", "documentObjectKey") WHERE "documentObjectKey" IS NOT NULL');
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS invoice_event_records (

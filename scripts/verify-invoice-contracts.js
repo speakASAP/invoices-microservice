@@ -18,6 +18,8 @@ const loggerService = read('src/common/logger.service.ts');
 const k8sConfig = read('k8s/configmap.yaml');
 const docs = read('docs/orchestrator/PLAN.md');
 const storageContract = read('docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md');
+const invoiceDocumentEntity = read('src/invoices/entities/invoice-document.entity.ts');
+const invoiceMigration = read('src/migrations/20260702120000-CreateInvoicesTables.ts');
 
 assert(eventDto.includes("created: 'orders.order.created.v1'"), 'created Orders event contract missing');
 assert(eventDto.includes("paid: 'orders.order.paid.v1'"), 'paid Orders event contract missing');
@@ -32,7 +34,15 @@ assert(controller.includes("Post('invoices/account/:invoiceId/download-link')"),
 assert(controller.includes("Get('invoices/:invoiceId/document.html')"), 'internal document read endpoint missing');
 assert(controller.includes("Get('invoices/:invoiceId/document.pdf')"), 'internal PDF document read endpoint missing');
 assert(controller.includes("Get('documents/:invoiceId.pdf')"), 'public PDF document endpoint missing');
-assert(read('src/invoices/entities/invoice-document.entity.ts').includes('documentPdfSha256'), 'PDF checksum persistence missing');
+assert(invoiceDocumentEntity.includes('documentPdfSha256'), 'PDF checksum persistence missing');
+assert(invoiceDocumentEntity.includes('documentObjectBucket'), 'invoice document object bucket reference missing');
+assert(invoiceDocumentEntity.includes('documentObjectKey'), 'invoice document object key reference missing');
+assert(invoiceDocumentEntity.includes('documentObjectSha256'), 'invoice document object checksum reference missing');
+assert(invoiceDocumentEntity.includes('documentObjectEtag'), 'invoice document object etag reference missing');
+assert(invoiceDocumentEntity.includes('documentObjectSize'), 'invoice document object size reference missing');
+assert(invoiceDocumentEntity.includes('documentStoredAt'), 'invoice document stored-at reference missing');
+assert(invoiceMigration.includes('documentObjectBucket') && invoiceMigration.includes('documentObjectKey'), 'invoice document object reference migration columns missing');
+assert(invoiceMigration.includes('idx_invoice_documents_object_key'), 'invoice document object key index missing');
 assert(loggerService.includes("serviceName = 'invoices-microservice'"), 'Logging payload must identify invoices service');
 assert(loggerService.includes("loggingPath = process.env.LOGGING_SERVICE_API_PATH?.trim() || '/api/logs'"), 'Logging endpoint path must default to /api/logs');
 assert(loggerService.includes("replace(/\\/+$/, '')"), 'Logging service URL must be normalized before posting logs');
@@ -49,6 +59,8 @@ assert(docs.includes('subject/email account-scoped invoice listing'), 'account a
 assert(storageContract.includes('MinIO/S3-backed immutable PDF object storage'), 'invoice document storage contract must select MinIO/S3 immutable PDF storage');
 assert(storageContract.includes('[MISSING: invoice document bucket name]'), 'invoice document storage contract must keep bucket provisioning explicit');
 assert(storageContract.includes('invoices/{yyyy}/{orderId}/{type}/{invoiceId}-{documentPdfSha256}.pdf'), 'invoice document storage contract must define deterministic key layout');
+assert(storageContract.includes('documentObjectBucket') && storageContract.includes('documentObjectKey'), 'invoice document storage contract must document object reference fields');
+assert(storageContract.includes('source-implemented') && storageContract.includes('runtime-not-applied'), 'invoice document storage contract must distinguish source schema from runtime application');
 assert(storageContract.includes('documentPdfSha256'), 'invoice document storage contract must require PDF checksum metadata');
 assert(storageContract.includes('application/pdf'), 'invoice document storage contract must require PDF MIME type');
 assert(storageContract.includes('tokenized endpoints') && storageContract.includes('Presigned URLs'), 'invoice document storage contract must define tokenized or presigned access');

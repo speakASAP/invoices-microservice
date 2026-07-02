@@ -143,6 +143,17 @@ backfill/rollback plan are approved and implemented. Validation passed:
 `npm run verify:contracts`, `npm run verify:runtime-readiness`, `npm test`,
 and `git diff --check`.
 
+2026-07-02 continuation: Added the source-level nullable object-reference
+schema for future off-database invoice PDFs without adding S3 runtime
+dependencies or changing current DB-backed document reads. `InvoiceDocument`
+and the idempotent migration now include `documentObjectBucket`,
+`documentObjectKey`, `documentObjectSha256`, `documentObjectEtag`,
+`documentObjectSize`, and `documentStoredAt`, plus a partial object-key index.
+The storage contract now marks this as source-implemented/runtime-not-applied.
+Runtime bucket provisioning, service-scoped credentials, upload/head/get/presign
+client, checksum readback, backfill, and deploy/migration application remain
+gated.
+
 2026-07-02 continuation: Live core runtime prerequisites now pass without
 printing secret values. `npm run verify:runtime-prereqs` confirms
 `secret/prod/invoices-microservice` exists with required key names, the

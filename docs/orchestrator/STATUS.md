@@ -407,6 +407,35 @@ Validation:
 - `git diff --check`: passed.
 
 
+## 2026-07-02 - Invoice Object Reference Schema
+
+Implemented the source-level database shape needed for future MinIO/S3 invoice
+PDF objects without changing current runtime reads:
+
+- `InvoiceDocument` now has nullable object reference fields:
+  `documentObjectBucket`, `documentObjectKey`, `documentObjectSha256`,
+  `documentObjectEtag`, `documentObjectSize`, and `documentStoredAt`.
+- The idempotent invoices migration creates those columns for new databases and
+  adds them with `ADD COLUMN IF NOT EXISTS` for existing databases.
+- A partial index on `documentObjectBucket` and `documentObjectKey` is present
+  for future object lookup.
+- `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md` now marks the DB
+  object-reference lane as source-implemented/runtime-not-applied.
+
+Boundary decision: no S3 dependency was added, no bucket was created, no Vault
+value was written, no MinIO policy was changed, no backfill was run, and
+DB-backed PDF reads remain the active document path.
+
+Remaining storage blockers:
+
+- `[MISSING: approved deploy/runtime migration application for invoice document object references]`
+- `[MISSING: invoice document bucket name]`
+- `[MISSING: service-scoped invoices S3 credentials in Vault]`
+- `[MISSING: approved retention class and lifecycle policy for tax documents]`
+- `[MISSING: invoices storage client implementation and checksum validation]`
+- `[MISSING: backfill and rollback plan for DB-backed PDFs]`
+
+
 ## 2026-07-02 - Core Runtime Prerequisites Closed
 
 Re-ran the live runtime gates after the storage contract commit:

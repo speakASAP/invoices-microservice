@@ -95,11 +95,19 @@ Required object metadata:
 | `issuedAt` | invoice issue timestamp |
 | `retentionClass` | `[MISSING: legal retention class]` |
 
-The database remains the canonical invoice index. Future storage migration must
-add object reference fields, for example `documentObjectBucket`,
-`documentObjectKey`, `documentObjectSha256`, `documentObjectEtag`,
-`documentObjectSize`, and `documentStoredAt`, without removing DB-backed PDF
-read capability until backfill is verified.
+The database remains the canonical invoice index. Object reference fields are
+source-implemented but runtime-not-applied until the next approved invoices
+deploy/migration:
+
+- `documentObjectBucket`
+- `documentObjectKey`
+- `documentObjectSha256`
+- `documentObjectEtag`
+- `documentObjectSize`
+- `documentStoredAt`
+
+These fields are nullable and must not replace DB-backed PDF read capability
+until object upload, checksum readback, and backfill are verified.
 
 ## Access Model
 
@@ -150,7 +158,7 @@ snapshots.
 | --- | --- | --- | --- | --- | --- |
 | A Bucket policy | approval-gated | MinIO/platform owner | private invoice bucket and prefix policy | root credential sharing; public bucket | MinIO policy check plus non-secret bucket head |
 | B Secrets | approval-gated | platform/secrets owner | service-scoped S3 access key/secret in Vault | printing secret values | key-presence verifier without values |
-| C DB migration | dependency-gated | invoices owner | object reference fields and fallback reads | dropping DB PDF before backfill | migration dry-run and invoice read tests |
+| C DB migration | source-implemented-runtime-not-applied | invoices owner | nullable object reference fields and DB-backed fallback reads | dropping DB PDF before backfill | migration source checks and invoice read tests |
 | D Storage client | dependency-gated | invoices owner | put/head/get/presign wrapper with checksum verification | bucket admin APIs | focused storage unit tests |
 | E Backfill/dual-write | dependency-gated | integration owner | write objects for new invoices and optionally backfill existing DB PDFs | destructive cleanup | synthetic runtime smoke and checksum audit |
 | F Notifications attachment review | blocked | notifications owner | direct PDF attachments only if product/legal requires them | real sends before approval | no-send validation or provider sandbox |
@@ -160,7 +168,7 @@ snapshots.
 - `[MISSING: invoice document bucket name]`
 - `[MISSING: service-scoped invoices S3 credentials in Vault]`
 - `[MISSING: approved retention class and lifecycle policy for tax documents]`
-- `[MISSING: DB migration for invoice document object references]`
+- `[MISSING: approved deploy/runtime migration application for invoice document object references]`
 - `[MISSING: invoices storage client implementation and checksum validation]`
 - `[MISSING: backfill and rollback plan for DB-backed PDFs]`
 - `[MISSING: runtime smoke evidence for upload, head, tokenized download, and checksum match]`

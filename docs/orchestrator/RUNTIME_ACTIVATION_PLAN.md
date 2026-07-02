@@ -60,7 +60,7 @@ Last observed on 2026-07-02:
 | E Seller legal | approval-gated | legal/platform owner | create `secret/prod/invoices-microservice-seller` with seller legal identity and tax/company identifier, then sync `invoices-microservice-seller-secret` through ExternalSecret | fake legal identity; printing legal secret values | `npm run verify:seller-legal-source`; `npm run runtime:sync-seller-legal`; `npm run verify:consumer-enable-prereqs` |
 | F Deploy switch | partially-complete | integration owner | workload deployed with `INVOICES_PUBLIC_BASE_URL=https://invoices.alfares.cz`; enable `ORDERS_EVENTS_CONSUMER_ENABLED=true` only for final smoke after seller legal data exists | enabling consumer before seller legal data exists | `npm run verify:consumer-enable-prereqs`; `npm run runtime:enable-orders-consumer`; `npm run verify:final-smoke-prereqs` |
 | G Final smoke | dependency-gated | validation owner | synthetic order, proforma invoice, paid event, final tax invoice, account download, logging evidence | real customer order/payment/notification; unapproved token rotation | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md`; `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence` |
-| H Document storage | source-selected-runtime-gated | invoices/storage + MinIO owners | future private MinIO/S3 bucket, object references, checksum verified upload/read, tokenized or presigned access | public bucket, root credentials, object overwrite/delete, raw PDF logs | `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md`; future storage smoke |
+| H Document storage | source-schema-ready-runtime-gated | invoices/storage + MinIO owners | future private MinIO/S3 bucket, nullable object references, checksum verified upload/read, tokenized or presigned access | public bucket, root credentials, object overwrite/delete, raw PDF logs | `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md`; future storage smoke |
 
 ## Activation Order
 
@@ -134,4 +134,4 @@ Last observed on 2026-07-02:
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
-- `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
+- `[MISSING: runtime MinIO/S3 invoice document bucket, credentials, retention, upload/presign client, migration application, backfill, and checksum smoke]`
