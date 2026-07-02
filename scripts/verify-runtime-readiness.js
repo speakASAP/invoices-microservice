@@ -17,6 +17,8 @@ const deployment = read('k8s/deployment.yaml');
 const externalSecret = read('k8s/external-secret.yaml');
 const consumer = read('src/events/rabbitmq-orders.consumer.ts');
 const runtimePrereqs = read('scripts/check-runtime-prereqs.sh');
+const finalSmokePrereqs = read('scripts/check-final-smoke-prereqs.sh');
+const packageJson = read('package.json');
 
 assert(dbModule.includes('ensureDatabaseExistsFromEnv'), 'database module does not run DB bootstrap gate');
 assert(dbBootstrap.includes("env.DB_AUTO_CREATE !== 'true'"), 'DB bootstrap is not opt-in');
@@ -31,5 +33,11 @@ assert(runtimePrereqs.includes('desired replicas > 0'), 'runtime prereq gate mus
 assert(deployment.includes('invoices-microservice-seller-secret') && deployment.includes('optional: true'), 'seller legal secret must be optional for fail-closed deploys');
 assert(!externalSecret.includes('INVOICE_SELLER_NAME'), 'runtime ExternalSecret must not require seller legal data for service startup');
 assert(!runtimePrereqs.includes('INVOICE_SELLER_NAME'), 'runtime prereq gate must not require seller legal data for service startup');
+assert(packageJson.includes('verify:final-smoke-prereqs'), 'final smoke prereq verifier script is not registered');
+assert(finalSmokePrereqs.includes('PAYMENT_API_KEY_SCOPES'), 'final smoke verifier must check Payments API key scope');
+assert(finalSmokePrereqs.includes('channel_registry'), 'final smoke verifier must check Notifications channel policy');
+assert(finalSmokePrereqs.includes('INVOICE_SELLER_NAME'), 'final smoke verifier must check seller legal data');
+assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smoke verifier must check Orders consumer enablement');
+assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');
 
 console.log('Runtime readiness source verification passed');

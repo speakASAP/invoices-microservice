@@ -307,3 +307,44 @@ Validation:
 
 Remaining blocker: external object storage or direct attachment policy is still
 `[MISSING]`; the source baseline stores PDFs in the invoices database.
+
+## 2026-07-02 - Final Smoke Prerequisite Verifier
+
+Added `npm run verify:final-smoke-prereqs` as a non-mutating final integration
+gate. It intentionally stays out of `scripts/deploy.sh`: first deployment can
+remain blocked only by core runtime prerequisites, while final smoke must also
+prove:
+
+- `invoices-microservice` is deployed and ready;
+- `ORDERS_EVENTS_CONSUMER_ENABLED=true` and public base URL are set;
+- seller legal secret values are configured;
+- the invoices Payments API key is registered in Payments with `payments:read`;
+- Notifications projects the invoices token, has an active
+  `invoices.documents` channel policy for `invoices-microservice` and
+  `transactional`, and its no-send validation script passes.
+
+The verifier reads secrets only for equality/scope checks and never prints
+secret values.
+
+
+## 2026-07-02 - Final Smoke Prerequisite Live Check
+
+Ran the new final-smoke prerequisite verifier against live Alfares state. It
+failed closed without printing secret values.
+
+Live blockers reported by `npm run verify:final-smoke-prereqs`:
+
+- `[MISSING: Vault path secret/prod/invoices-microservice]`
+- `[MISSING: database invoices]`
+- `[MISSING: core runtime prerequisites pass before final smoke]`
+- `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
+- `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
+- `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
+- `[MISSING: seller legal secret invoices-microservice-seller-secret]`
+- `[MISSING: Vault key secret/prod/invoices-microservice.PAYMENTS_API_KEY]`
+- `[MISSING: Vault key secret/prod/invoices-microservice.NOTIFICATIONS_SERVICE_TOKEN]`
+- `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`
+- `[MISSING: Notifications no-send invoices.documents validation passes]`
+
+The dependency workloads remain ready in `verify:runtime-prereqs`, but final
+smoke must not start until the stricter verifier passes.

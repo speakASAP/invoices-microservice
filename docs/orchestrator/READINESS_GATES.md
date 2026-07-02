@@ -21,6 +21,7 @@
 - Notifications delivery policy is configured or explicitly disabled.
 - Public document base URL is configured.
 - PDF documents are generated and retrievable through guarded internal and tokenized public endpoints.
+- Final-smoke-only gates are checked by `npm run verify:final-smoke-prereqs` after core deploy prerequisites close.
 
 ## Deployment Readiness
 

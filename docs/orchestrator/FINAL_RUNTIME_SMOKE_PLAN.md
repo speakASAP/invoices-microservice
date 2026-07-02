@@ -75,6 +75,7 @@ The smoke remains blocked until all gates are closed.
 
    ```bash
    ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:runtime-prereqs'
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:final-smoke-prereqs'
    ```
 
 2. Vault path `secret/prod/invoices-microservice` exists with these key names
@@ -170,6 +171,7 @@ Run before any mutation:
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:contracts'
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:runtime-readiness'
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:runtime-prereqs'
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:final-smoke-prereqs'
 ssh alfares 'cd /home/ssf/Documents/Github/orders-microservice && npm run verify:invoices-read-boundary'
 ssh alfares 'cd /home/ssf/Documents/Github/orders-microservice && npm run verify:event-contracts'
 ssh alfares 'cd /home/ssf/Documents/Github/payments-microservice && npm test -- --runTestsByPath test/payment-status-snapshot.spec.ts test/payments-orders-status-bridge.spec.ts'
@@ -177,8 +179,8 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && bash -n
 ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm test -- --runTestsByPath src/auth/jwt-roles.guard.spec.ts src/notifications/channel-registry.service.spec.ts src/notifications/notifications.service.spec.ts'
 ```
 
-Expected result: all source checks pass and `verify:runtime-prereqs` passes.
-If `verify:runtime-prereqs` fails, stop.
+Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
+`verify:final-smoke-prereqs` passes. If either runtime verifier fails, stop.
 
 ### Case 1: Order Created Creates Proforma
 
@@ -388,7 +390,7 @@ Expected result:
 | Workstream | Status | Owner | Dependency | Handoff |
 | --- | --- | --- | --- | --- |
 | Final smoke design | dependency-gated | final smoke lane | runtime gates | This runbook |
-| Runtime provisioning | blocked | platform/secrets owner | Vault, DB, scaling | Close `verify:runtime-prereqs` |
+| Runtime provisioning | blocked | platform/secrets owner | Vault, DB, scaling | Close `verify:runtime-prereqs` and `verify:final-smoke-prereqs` |
 | Notifications delivery | dependency-gated | notifications owner | token projection, channel row | Confirm `invoices.documents` policy |
 | Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID` |
 | Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order |
@@ -396,9 +398,10 @@ Expected result:
 Merge/order of operations:
 1. Runtime provisioning closes Vault, DB, and scaled dependency gates.
 2. Notifications lane lands/deploys identity and channel policy.
-3. Orchestrator approves invoices deployment and consumer enable.
-4. Orchestrator creates the synthetic fixture and runs the final smoke.
-5. Validation owner captures API, DB, and logging evidence without secrets or raw
+3. Orchestrator runs `npm run verify:final-smoke-prereqs` and closes its gates.
+4. Orchestrator approves invoices deployment and consumer enable.
+5. Orchestrator creates the synthetic fixture and runs the final smoke.
+6. Validation owner captures API, DB, and logging evidence without secrets or raw
    customer data.
 
 ## Open Blockers

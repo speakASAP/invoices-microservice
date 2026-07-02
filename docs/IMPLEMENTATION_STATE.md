@@ -8,13 +8,15 @@ created: 2026-07-02
 last_updated: 2026-07-02
 completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
-current_chunk: PDF-backed document delivery, runtime provisioning, and final smoke gating
+current_chunk: Final-smoke prerequisite verification and runtime provisioning
 blockers:
   - [MISSING: Vault path secret/prod/invoices-microservice with core runtime key names]
   - [MISSING: invoices database provisioning or owner-approved DB_AUTO_CREATE=true first deploy]
   - [MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]
   - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
+  - [MISSING: deployed invoices workload and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
+  - [MISSING: final-smoke prerequisite verifier passing in live runtime]
   - [MISSING: external object-storage/attachment contract for off-database immutable tax documents]
 ```
 
@@ -130,6 +132,13 @@ HTML snapshot. Internal and tokenized public `.pdf` endpoints are available,
 download-link responses include both HTML and PDF URLs, and Notifications now
 prefers the PDF URL while preserving the existing HTML URL contract. External
 object storage and provider attachment policy remain future runtime gates.
+
+2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
+post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
+consumer enablement, seller legal secret, Payments `payments:read` scope for
+the invoices API key, Notifications token projection, `invoices.documents`
+channel policy, and the Notifications no-send validation script without
+printing secret values.
 
 ## Preserved Intent
 
