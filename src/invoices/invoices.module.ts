@@ -11,6 +11,7 @@ import { OrdersClientService } from './orders-client.service';
 import { PaymentsClientService } from './payments-client.service';
 import { NotificationsClientService } from './notifications-client.service';
 import { InvoiceTemplateService } from './invoice-template.service';
+import { InvoicePdfService } from './invoice-pdf.service';
 import { InternalAuthGuard } from '../common/internal-auth.guard';
 import { LoggerService } from '../common/logger.service';
 import { CustomerAuthGuard } from '../common/customer-auth.guard';
@@ -28,6 +29,7 @@ import { CustomerAuthGuard } from '../common/customer-auth.guard';
     PaymentsClientService,
     NotificationsClientService,
     InvoiceTemplateService,
+    InvoicePdfService,
     InternalAuthGuard,
     CustomerAuthGuard,
     LoggerService,

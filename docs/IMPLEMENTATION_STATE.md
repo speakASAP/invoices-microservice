@@ -8,14 +8,14 @@ created: 2026-07-02
 last_updated: 2026-07-02
 completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
-current_chunk: Runtime provisioning, notification contract, and final smoke gating
+current_chunk: PDF-backed document delivery, runtime provisioning, and final smoke gating
 blockers:
   - [MISSING: Vault path secret/prod/invoices-microservice with core runtime key names]
   - [MISSING: invoices database provisioning or owner-approved DB_AUTO_CREATE=true first deploy]
   - [MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]
   - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
-  - [MISSING: PDF attachment/storage contract for immutable tax documents]
+  - [MISSING: external object-storage/attachment contract for off-database immutable tax documents]
 ```
 
 ## Current Checkpoint
@@ -122,6 +122,14 @@ RabbitMQ all report ready `1/1`. Added
 `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` as the dependency-gated final
 smoke runbook for proforma issuance, final tax invoice issuance, account
 access, and logging evidence.
+
+2026-07-02 continuation: Added source-level PDF document generation with
+PDFKit. Each issued proforma/final invoice now stores rendered PDF bytes,
+SHA-256 checksum, MIME type, and filename alongside the existing immutable
+HTML snapshot. Internal and tokenized public `.pdf` endpoints are available,
+download-link responses include both HTML and PDF URLs, and Notifications now
+prefers the PDF URL while preserving the existing HTML URL contract. External
+object storage and provider attachment policy remain future runtime gates.
 
 ## Preserved Intent
 

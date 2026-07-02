@@ -31,6 +31,6 @@ provider, or address payloads for invoice generation.
 | D Notifications delivery policy | source-ready-runtime-gated | notifications owner | invoices service actor plus `invoices.documents` channel policy; no provider send | commit `676b662`, validate endpoint/source tests, no-send readiness script |
 | G final smoke runbook | dependency-gated | integration owner | order-created proforma, payment-completed final, account access, logging evidence | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md`; run only after runtime prereqs pass |
 | E account access | source-ready-runtime-gated | invoices account owner | Auth-validated customer invoice list and download-link rotation | focused account tests + contract verifier |
-| F PDF/durable storage | dependency-gated | invoices/storage owner | immutable PDF object references and tax-document attachment policy | storage contract + focused PDF validation |
+| F PDF/durable storage | source-ready-runtime-gated | invoices/storage owner | DB-backed PDF bytes/checksum and secure PDF links; external object storage remains future | PDFKit tests + contract verifier |
 
 Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications runtime channel policy -> final smoke -> deploy.

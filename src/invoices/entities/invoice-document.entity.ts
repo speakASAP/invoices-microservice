@@ -70,6 +70,18 @@ export class InvoiceDocument {
   @Column({ type: 'text', nullable: true })
   documentHtml: string | null;
 
+  @Column({ type: 'bytea', nullable: true })
+  documentPdf: Buffer | null;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  documentPdfSha256: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  documentMimeType: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  documentFilename: string | null;
+
   @Column({ type: 'varchar', length: 128, nullable: true })
   downloadTokenHash: string | null;
 

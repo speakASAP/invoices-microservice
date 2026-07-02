@@ -211,6 +211,7 @@ Expected invoices evidence:
   unavailable, or `sent` only when approved Notifications delivery succeeds.
 - `invoiceNumber` is allocated.
 - `documentHtml` is present.
+- `documentPdf` is present and `documentPdfSha256` is populated.
 - `downloadTokenHash` is present but not printed.
 - `blockedReason` is null.
 - One `invoice_event_records` row for the created event with `status='processed'`.
@@ -250,7 +251,8 @@ Expected invoices evidence:
 - `paymentReferenceId` is populated from the event or order snapshot.
 - `paymentSnapshot` is present when Payments snapshot lookup succeeds; if it is
   null, log the snapshot blocker and keep the invoice issuance decision explicit.
-- `documentHtml` and `downloadTokenHash` are present.
+- `documentHtml`, `documentPdf`, `documentPdfSha256`, and
+  `downloadTokenHash` are present.
 - `blockedReason` is null.
 - One `invoice_event_records` row for the paid event with `status='processed'`.
 - Logging has a sanitized `Invoice issued` record with `invoiceType=final`.
@@ -275,6 +277,11 @@ curl -fsS \
   "${INVOICES_URL}/invoices/${INVOICE_ID}/document.html" \
   -o /tmp/invoice-document-smoke.html
 
+curl -fsS \
+  -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
+  "${INVOICES_URL}/invoices/${INVOICE_ID}/document.pdf" \
+  -o /tmp/invoice-document-smoke.pdf
+
 curl -fsS -X POST \
   -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
   "${INVOICES_URL}/invoices/${INVOICE_ID}/download-link"
@@ -282,11 +289,12 @@ curl -fsS -X POST \
 
 Expected result:
 - Internal order invoice listing returns proforma and final rows.
-- Internal document endpoint returns HTML.
-- Download-link rotation returns a public URL and does not expose the token hash.
-- Public document URL returns HTML only with the returned opaque token.
-- Public document URL without token, with a wrong token, or with a stale token
-  returns forbidden.
+- Internal document endpoints return HTML and PDF.
+- Download-link rotation returns HTML and PDF public URLs and does not expose
+  the token hash.
+- Public document URLs return HTML/PDF only with the returned opaque token.
+- Public document URLs without token, with a wrong token, or with a stale token
+  return forbidden.
 
 ### Case 4: Customer Account Access
 
@@ -310,7 +318,8 @@ Expected result:
   `orderSnapshot.customer.email` matches the Auth-validated customer email.
 - Response omits raw order snapshot, document HTML, token hashes, billing
   address, customer address, blocked internals, and source event internals.
-- Customer download-link rotation returns a public URL for matching invoices.
+- Customer download-link rotation returns public HTML and PDF URLs for matching
+  invoices.
 - A different test Auth account must not see or rotate the invoice.
 
 ### Case 5: Logging Evidence
@@ -343,7 +352,7 @@ ORDER_ID='<ORDER_ID>'
 POSTGRES_POD='<running db-server-postgres pod>'
 
 ssh alfares "kubectl exec -n statex-apps ${POSTGRES_POD} -- sh -lc \
-  'psql -U \"\$POSTGRES_USER\" -d invoices -tAc \"select type,status,\\\"invoiceNumber\\\",currency,\\\"totalAmount\\\",\\\"taxAmount\\\",\\\"paymentReferenceId\\\",(\\\"documentHtml\\\" is not null) as has_document,(\\\"downloadTokenHash\\\" is not null) as has_token,\\\"blockedReason\\\",\\\"issuedAt\\\",\\\"sentAt\\\" from invoice_documents where \\\"orderId\\\" = '\''${ORDER_ID}'\'' order by type;\"'"
+  'psql -U \"\$POSTGRES_USER\" -d invoices -tAc \"select type,status,\\\"invoiceNumber\\\",currency,\\\"totalAmount\\\",\\\"taxAmount\\\",\\\"paymentReferenceId\\\",(\\\"documentHtml\\\" is not null) as has_html,(\\\"documentPdf\\\" is not null) as has_pdf,\\\"documentPdfSha256\\\",(\\\"downloadTokenHash\\\" is not null) as has_token,\\\"blockedReason\\\",\\\"issuedAt\\\",\\\"sentAt\\\" from invoice_documents where \\\"orderId\\\" = '\''${ORDER_ID}'\'' order by type;\"'"
 
 ssh alfares "kubectl exec -n statex-apps ${POSTGRES_POD} -- sh -lc \
   'psql -U \"\$POSTGRES_USER\" -d invoices -tAc \"select \\\"eventType\\\",status,\\\"orderId\\\",\\\"processedAt\\\" from invoice_event_records where \\\"orderId\\\" = '\''${ORDER_ID}'\'' order by \\\"processedAt\\\";\"'"
@@ -352,8 +361,8 @@ ssh alfares "kubectl exec -n statex-apps ${POSTGRES_POD} -- sh -lc \
 Expected result:
 - Exactly two invoice rows for `ORDER_ID`: `proforma` and `final`.
 - Exactly two processed event rows for created and paid events.
-- No raw `orderSnapshot`, `paymentSnapshot`, `documentHtml`, or token hash is
-  printed in smoke evidence.
+- No raw `orderSnapshot`, `paymentSnapshot`, `documentHtml`, `documentPdf`, or
+  token hash is printed in smoke evidence.
 
 ## Rollback And No-Op Constraints
 
@@ -399,6 +408,7 @@ Merge/order of operations:
 - `[MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: seller legal secret values for successful issuance]`
+- `[MISSING: external object-storage/attachment policy if PDF links are insufficient for the delivery channel]`
 - `[MISSING: Notifications channel_registry row/policy for invoices.documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`

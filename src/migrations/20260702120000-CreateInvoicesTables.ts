@@ -55,6 +55,10 @@ export class CreateInvoicesTables20260702120000 implements MigrationInterface {
         "orderSnapshot" jsonb,
         "paymentSnapshot" jsonb,
         "documentHtml" text,
+        "documentPdf" bytea,
+        "documentPdfSha256" varchar(64),
+        "documentMimeType" varchar(100),
+        "documentFilename" varchar(255),
         "downloadTokenHash" varchar(128),
         "blockedReason" text,
         "issuedAt" timestamp,
@@ -65,6 +69,10 @@ export class CreateInvoicesTables20260702120000 implements MigrationInterface {
         CONSTRAINT uq_invoice_documents_invoice_number UNIQUE ("invoiceNumber")
       )
     `);
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentPdf" bytea');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentPdfSha256" varchar(64)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentMimeType" varchar(100)');
+    await queryRunner.query('ALTER TABLE invoice_documents ADD COLUMN IF NOT EXISTS "documentFilename" varchar(255)');
     await queryRunner.query('CREATE INDEX IF NOT EXISTS idx_invoice_documents_order_id ON invoice_documents ("orderId")');
     await queryRunner.query('CREATE INDEX IF NOT EXISTS idx_invoice_documents_status ON invoice_documents (status)');
 

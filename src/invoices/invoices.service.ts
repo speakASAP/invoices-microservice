@@ -21,6 +21,7 @@ import { OrdersClientService } from './orders-client.service';
 import { PaymentsClientService } from './payments-client.service';
 import { NotificationsClientService } from './notifications-client.service';
 import { InvoiceTemplateService } from './invoice-template.service';
+import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoiceOrderSnapshot, SellerSnapshot } from './order-snapshot.types';
 import { LoggerService } from '../common/logger.service';
 
@@ -29,6 +30,19 @@ export type OrdersEventHandlingResult =
   | { action: 'deduped'; eventId: string }
   | { action: 'blocked'; invoiceId: string; reason: string }
   | { action: 'issued'; invoiceId: string; invoiceNumber: string | null; status: InvoiceStatus };
+
+export interface InvoiceDownloadLinks {
+  downloadUrl: string;
+  htmlUrl: string;
+  pdfUrl: string | null;
+}
+
+export interface InvoicePdfDocument {
+  content: Buffer;
+  mimeType: string;
+  filename: string;
+  sha256: string | null;
+}
 
 @Injectable()
 export class InvoicesService {
@@ -42,6 +56,7 @@ export class InvoicesService {
     private readonly paymentsClient: PaymentsClientService,
     private readonly notificationsClient: NotificationsClientService,
     private readonly template: InvoiceTemplateService,
+    private readonly pdf: InvoicePdfService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -101,7 +116,7 @@ export class InvoicesService {
       .getMany();
   }
 
-  async createCustomerDownloadLink(invoiceId: string, email: string): Promise<string | null> {
+  async createCustomerDownloadLinks(invoiceId: string, email: string): Promise<InvoiceDownloadLinks | null> {
     const normalizedEmail = this.normalizeEmail(email);
     if (!normalizedEmail) return null;
 
@@ -114,10 +129,12 @@ export class InvoicesService {
       return null;
     }
 
-    const token = this.generateDownloadToken();
-    invoice.downloadTokenHash = this.hashToken(token);
-    await this.invoiceRepository.save(invoice);
-    return this.buildDownloadUrl(invoice.id, token) || null;
+    return this.rotateDownloadLinks(invoice);
+  }
+
+  async createCustomerDownloadLink(invoiceId: string, email: string): Promise<string | null> {
+    const links = await this.createCustomerDownloadLinks(invoiceId, email);
+    return links?.downloadUrl || null;
   }
 
   async getDocumentHtml(invoiceId: string, token: string): Promise<string | null> {
@@ -133,16 +150,34 @@ export class InvoicesService {
     return invoice?.documentHtml || null;
   }
 
-  async createDownloadLink(invoiceId: string): Promise<string | null> {
+  async getDocumentPdf(invoiceId: string, token: string): Promise<InvoicePdfDocument | null> {
+    const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
+    if (!invoice?.documentPdf || !invoice.downloadTokenHash || !this.verifyToken(token, invoice.downloadTokenHash)) {
+      return null;
+    }
+    return this.toPdfDocument(invoice);
+  }
+
+  async getInternalDocumentPdf(invoiceId: string): Promise<InvoicePdfDocument | null> {
+    const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
+    if (!invoice?.documentPdf) {
+      return null;
+    }
+    return this.toPdfDocument(invoice);
+  }
+
+  async createDownloadLinks(invoiceId: string): Promise<InvoiceDownloadLinks | null> {
     const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
     if (!invoice?.documentHtml) {
       return null;
     }
 
-    const token = this.generateDownloadToken();
-    invoice.downloadTokenHash = this.hashToken(token);
-    await this.invoiceRepository.save(invoice);
-    return this.buildDownloadUrl(invoice.id, token) || null;
+    return this.rotateDownloadLinks(invoice);
+  }
+
+  async createDownloadLink(invoiceId: string): Promise<string | null> {
+    const links = await this.createDownloadLinks(invoiceId);
+    return links?.downloadUrl || null;
   }
 
   private async routeVerifiedEvent(event: VerifiedOrdersEvent): Promise<OrdersEventHandlingResult> {
@@ -211,13 +246,20 @@ export class InvoicesService {
       record.issuedAt = issuedAt;
       record.downloadTokenHash = this.hashToken(token);
       record.documentHtml = this.template.render({ invoice: record, order, seller });
+      const pdf = await this.pdf.render({ invoice: record, order, seller });
+      record.documentPdf = pdf.content;
+      record.documentPdfSha256 = pdf.sha256;
+      record.documentMimeType = pdf.mimeType;
+      record.documentFilename = pdf.filename;
       return manager.save(InvoiceDocument, record);
     });
 
+    const links = this.buildDownloadLinks(invoice.id, token);
     const sent = await this.notificationsClient.sendInvoiceReady({
       invoice,
       recipient: this.resolveRecipient(order),
-      downloadUrl: this.buildDownloadUrl(invoice.id, token),
+      downloadUrl: links?.pdfUrl || links?.htmlUrl,
+      pdfDownloadUrl: links?.pdfUrl || undefined,
     });
 
     if (sent) {
@@ -303,10 +345,49 @@ export class InvoicesService {
     return order.customer?.email || undefined;
   }
 
+  private async rotateDownloadLinks(invoice: InvoiceDocument): Promise<InvoiceDownloadLinks | null> {
+    const token = this.generateDownloadToken();
+    const links = this.buildDownloadLinks(invoice.id, token);
+    if (!links) return null;
+    invoice.downloadTokenHash = this.hashToken(token);
+    await this.invoiceRepository.save(invoice);
+    return links;
+  }
+
   private buildDownloadUrl(invoiceId: string, token: string): string | undefined {
+    return this.buildDocumentUrl(invoiceId, 'html', token);
+  }
+
+  private buildPdfDownloadUrl(invoiceId: string, token: string): string | undefined {
+    return this.buildDocumentUrl(invoiceId, 'pdf', token);
+  }
+
+  private buildDownloadLinks(invoiceId: string, token: string): InvoiceDownloadLinks | null {
+    const htmlUrl = this.buildDownloadUrl(invoiceId, token);
+    if (!htmlUrl) return null;
+    return {
+      downloadUrl: htmlUrl,
+      htmlUrl,
+      pdfUrl: this.buildPdfDownloadUrl(invoiceId, token) || null,
+    };
+  }
+
+  private buildDocumentUrl(invoiceId: string, extension: 'html' | 'pdf', token: string): string | undefined {
     const base = process.env.INVOICES_PUBLIC_BASE_URL?.trim()?.replace(/\/+$/, '');
     if (!base) return undefined;
-    return `${base}/documents/${encodeURIComponent(invoiceId)}.html?token=${encodeURIComponent(token)}`;
+    return `${base}/documents/${encodeURIComponent(invoiceId)}.${extension}?token=${encodeURIComponent(token)}`;
+  }
+
+  private toPdfDocument(invoice: InvoiceDocument): InvoicePdfDocument {
+    const content = Buffer.isBuffer(invoice.documentPdf)
+      ? invoice.documentPdf
+      : Buffer.from(invoice.documentPdf as unknown as Uint8Array);
+    return {
+      content,
+      mimeType: invoice.documentMimeType || 'application/pdf',
+      filename: invoice.documentFilename || this.pdf.filenameFor(invoice),
+      sha256: invoice.documentPdfSha256,
+    };
   }
 
   private toStoredOrderSnapshot(order: InvoiceOrderSnapshot): Record<string, unknown> {

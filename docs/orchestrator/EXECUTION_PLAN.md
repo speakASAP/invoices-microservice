@@ -22,7 +22,7 @@ final tax invoice without duplicating Orders or Payments ownership.
 - Invoice document, event-record, and sequence persistence.
 - Orders event validation and RabbitMQ consumer.
 - Idempotent proforma/final issuance.
-- HTML document rendering and tokenized document access.
+- HTML and PDF document rendering with tokenized document access.
 - Optional Payments status and Notifications delivery clients.
 
 ## Non-Goals
@@ -39,7 +39,7 @@ final tax invoice without duplicating Orders or Payments ownership.
 | A | Service core | yes | invoices worker | `invoices-microservice/**` | buildable MVP | none |
 | B | Orders service-role read | yes after A contract | Orders integration owner | `orders-microservice/src/auth/*`, `src/orders/orders.controller.ts`, docs | approved internal read path | avoid dirty event files |
 | C | Runtime manifests/secrets | blocked | platform owner | `k8s/*`, Vault/ESO | deployable config | DB and token decisions |
-| D | PDF/delivery | blocked | delivery owner | invoices + notifications docs/code | PDF/storage/send | storage policy |
+| D | PDF/delivery | source-ready-runtime-gated | delivery owner | invoices + notifications docs/code | PDFKit generation, DB-backed PDF, secure PDF links | external object storage policy |
 
 ## Validation Plan
 

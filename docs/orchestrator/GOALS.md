@@ -9,6 +9,7 @@ Status: active
 - [x] Add Orders event validation.
 - [x] Add proforma/final issuance flow with blocked-record behavior.
 - [x] Add HTML document rendering and tokenized download endpoint.
+- [x] Add DB-backed PDF rendering, checksum persistence, and PDF download endpoints.
 - [x] Validate build/tests on remote.
 - [ ] Resolve runtime DB/Vault blockers and delivery policy gates.
 - [x] Add dependency-gated final runtime smoke plan.
@@ -16,12 +17,12 @@ Status: active
 
 ## Goal 2: PDF And Durable Storage
 
-Status: dependency-gated
+Status: source-ready-runtime-gated
 
-- [ ] Choose PDF rendering library/runtime.
-- [ ] Choose object storage/attachment contract.
-- [ ] Store immutable PDF object references.
-- [ ] Deliver PDF or secure download link through Notifications.
+- [x] Choose PDF rendering library/runtime: PDFKit.
+- [ ] Choose external object storage/attachment contract.
+- [x] Store immutable DB-backed PDF bytes, checksum, MIME type, and filename.
+- [x] Deliver secure PDF download link through Notifications payloads.
 
 ## Goal 3: Customer Account Access
 

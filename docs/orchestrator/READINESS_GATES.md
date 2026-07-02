@@ -20,6 +20,7 @@
 - RabbitMQ queue binding is configured.
 - Notifications delivery policy is configured or explicitly disabled.
 - Public document base URL is configured.
+- PDF documents are generated and retrievable through guarded internal and tokenized public endpoints.
 
 ## Deployment Readiness
 

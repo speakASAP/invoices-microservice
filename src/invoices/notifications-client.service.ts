@@ -15,6 +15,7 @@ export class NotificationsClientService {
     invoice: InvoiceDocument;
     recipient?: string;
     downloadUrl?: string;
+    pdfDownloadUrl?: string;
   }): Promise<boolean> {
     const baseUrl = process.env.NOTIFICATIONS_SERVICE_URL?.trim()?.replace(/\/+$/, '');
     const token = process.env.NOTIFICATIONS_SERVICE_TOKEN?.trim();
@@ -30,7 +31,7 @@ export class NotificationsClientService {
           type: input.invoice.type === InvoiceType.PROFORMA ? 'order_confirmation' : 'payment_confirmation',
           recipient: input.recipient,
           subject: `${label} ${input.invoice.invoiceNumber}`,
-          message: `${label} ${input.invoice.invoiceNumber} is ready: ${input.downloadUrl}`,
+          message: `${label} ${input.invoice.invoiceNumber} is ready: ${input.pdfDownloadUrl || input.downloadUrl}`,
           service: 'invoices-microservice',
           purpose: 'transactional',
           channelKey: process.env.INVOICES_NOTIFICATION_CHANNEL_KEY || 'invoices.documents',
@@ -40,6 +41,7 @@ export class NotificationsClientService {
               type: input.invoice.type,
               invoiceNumber: input.invoice.invoiceNumber,
               orderId: input.invoice.orderId,
+              documentFormat: input.pdfDownloadUrl ? 'pdf' : 'html',
             },
           },
         }, {

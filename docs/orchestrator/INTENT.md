@@ -16,7 +16,7 @@ Owned here:
 - invoice issuance state;
 - proforma and final invoice numbering;
 - immutable invoice snapshots;
-- rendered invoice document HTML and future PDF object references;
+- rendered invoice document HTML and DB-backed PDF documents with checksums;
 - document download token hashes;
 - delivery attempt metadata.
 

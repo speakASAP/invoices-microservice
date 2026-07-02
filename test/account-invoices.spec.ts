@@ -24,6 +24,7 @@ function makeService(repository: any): InvoicesService {
     {} as any,
     {} as any,
     {} as any,
+    { filenameFor: jest.fn(() => 'invoice.pdf') } as any,
     { log: jest.fn(), warn: jest.fn(), error: jest.fn() } as any,
   );
 }
@@ -88,11 +89,13 @@ describe('account invoice access', () => {
     };
     const service = makeService(repository);
 
-    const downloadUrl = await service.createCustomerDownloadLink('invoice-1', 'person@example.test');
+    const links = await service.createCustomerDownloadLinks('invoice-1', 'person@example.test');
 
-    expect(downloadUrl).toMatch(/^https:\/\/invoices\.example\.test\/documents\/invoice-1\.html\?token=/);
+    expect(links?.downloadUrl).toMatch(/^https:\/\/invoices\.example\.test\/documents\/invoice-1\.html\?token=/);
+    expect(links?.htmlUrl).toMatch(/^https:\/\/invoices\.example\.test\/documents\/invoice-1\.html\?token=/);
+    expect(links?.pdfUrl).toMatch(/^https:\/\/invoices\.example\.test\/documents\/invoice-1\.pdf\?token=/);
     expect(invoice.downloadTokenHash).toMatch(/^[a-f0-9]{64}$/);
-    expect(downloadUrl).not.toContain(invoice.downloadTokenHash as string);
+    expect(links?.downloadUrl).not.toContain(invoice.downloadTokenHash as string);
     expect(queryBuilder.andWhere).toHaveBeenCalledWith(
       'LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email',
       { email: 'person@example.test' },

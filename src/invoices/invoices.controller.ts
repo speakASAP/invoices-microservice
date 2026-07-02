@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Header, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CustomerAuthGuard, CustomerAuthUser } from '../common/customer-auth.guard';
 import { InternalAuthGuard } from '../common/internal-auth.guard';
@@ -46,13 +46,13 @@ export class InvoicesController {
     @Req() request: CustomerRequest,
   ) {
     const customer = this.requireCustomer(request);
-    const downloadUrl = await this.invoicesService.createCustomerDownloadLink(invoiceId, customer.email);
-    if (!downloadUrl) {
+    const links = await this.invoicesService.createCustomerDownloadLinks(invoiceId, customer.email);
+    if (!links) {
       throw new ForbiddenException('Invoice download link is not available');
     }
     return {
       success: true,
-      data: { invoiceId, downloadUrl },
+      data: { invoiceId, ...links },
     };
   }
 
@@ -70,18 +70,32 @@ export class InvoicesController {
     response.send(html);
   }
 
+  @Get('invoices/:invoiceId/document.pdf')
+  @UseGuards(InternalAuthGuard)
+  @Header('Content-Type', 'application/pdf')
+  async getInternalPdfDocument(
+    @Param('invoiceId') invoiceId: string,
+    @Res() response: Response,
+  ) {
+    const pdf = await this.invoicesService.getInternalDocumentPdf(invoiceId);
+    if (!pdf) {
+      throw new ForbiddenException('Invoice PDF document is not available');
+    }
+    this.sendPdf(response, pdf);
+  }
+
   @Post('invoices/:invoiceId/download-link')
   @UseGuards(InternalAuthGuard)
   async createDownloadLink(@Param('invoiceId') invoiceId: string) {
-    const downloadUrl = await this.invoicesService.createDownloadLink(invoiceId);
-    if (!downloadUrl) {
+    const links = await this.invoicesService.createDownloadLinks(invoiceId);
+    if (!links) {
       throw new ForbiddenException('Invoice download link is not available');
     }
     return {
       success: true,
       data: {
         invoiceId,
-        downloadUrl,
+        ...links,
       },
     };
   }
@@ -98,6 +112,20 @@ export class InvoicesController {
     }
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
     response.send(html);
+  }
+
+  @Get('documents/:invoiceId.pdf')
+  @Header('Content-Type', 'application/pdf')
+  async getPublicPdfDocument(
+    @Param('invoiceId') invoiceId: string,
+    @Query('token') token: string,
+    @Res() response: Response,
+  ) {
+    const pdf = await this.invoicesService.getDocumentPdf(invoiceId, token);
+    if (!pdf) {
+      throw new ForbiddenException('Invalid document token');
+    }
+    this.sendPdf(response, pdf);
   }
 
   private requireCustomer(request: CustomerRequest): CustomerAuthUser {
@@ -143,6 +171,14 @@ export class InvoicesController {
       sentAt: invoice.sentAt,
       createdAt: invoice.createdAt,
       documentAvailable: Boolean(invoice.documentHtml),
+      pdfAvailable: Boolean(invoice.documentPdf),
+      documentMimeType: invoice.documentMimeType,
     };
+  }
+
+  private sendPdf(response: Response, pdf: { content: Buffer; mimeType: string; filename: string }) {
+    response.setHeader('Content-Type', pdf.mimeType);
+    response.setHeader('Content-Disposition', `inline; filename="${pdf.filename}"`);
+    response.send(pdf.content);
   }
 }

@@ -282,3 +282,28 @@ Validation:
 
 Next action: provision the invoices Vault path and `invoices` database, then
 rerun `npm run verify:runtime-prereqs` before deployment or final smoke.
+
+## 2026-07-02 - PDF Document Baseline
+
+Added source-level PDF support for invoice documents:
+
+- `pdfkit` renders a PDF from the same immutable order/seller snapshot used for
+  HTML invoice rendering.
+- `invoice_documents` now stores `documentPdf`, `documentPdfSha256`,
+  `documentMimeType`, and `documentFilename`.
+- Internal and tokenized public PDF endpoints are available at
+  `/invoices/:invoiceId/document.pdf` and `/documents/:invoiceId.pdf`.
+- Download-link rotation returns both HTML and PDF URLs; Notifications prefers
+  the PDF URL while preserving the existing HTML URL.
+
+Validation:
+
+- `npm test -- --runTestsByPath test/invoices.service.spec.ts`: passed, 1 suite / 1 test.
+- `npm test -- --runTestsByPath test/invoice-pdf.service.spec.ts test/account-invoices.spec.ts test/invoice-template.service.spec.ts`: passed, 3 suites / 8 tests.
+- `npm run build`: passed.
+- `npm test`: passed, 6 suites / 14 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+
+Remaining blocker: external object storage or direct attachment policy is still
+`[MISSING]`; the source baseline stores PDFs in the invoices database.

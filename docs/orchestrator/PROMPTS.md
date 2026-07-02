@@ -16,5 +16,7 @@ event contract files or expand Orders event payload with customer/billing data.
 
 ## Workstream D: PDF And Delivery
 
-Design and implement PDF/object-storage delivery after runtime storage policy is
-approved. Do not send real notifications without explicit runtime approval.
+PDF generation is source-implemented with PDFKit and DB-backed immutable bytes.
+Future work should design external object-storage attachment policy after
+runtime storage policy is approved. Do not send real notifications without
+explicit runtime approval.
