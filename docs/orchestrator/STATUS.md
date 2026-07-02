@@ -186,3 +186,11 @@ Current live preflight evidence:
 - `[MISSING: deployment orders-microservice desired replicas > 0]`
 - `[MISSING: deployment payments-microservice desired replicas > 0]`
 - `[MISSING: deployment notifications-microservice desired replicas > 0]`
+- Logging and RabbitMQ are ready.
+
+Validation:
+
+- `npm run verify:runtime-prereqs`: failed as expected with explicit
+  scaled-zero blockers and no secret values printed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.
