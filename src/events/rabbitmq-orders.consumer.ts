@@ -39,10 +39,14 @@ export class RabbitMqOrdersConsumer implements OnModuleInit, OnModuleDestroy {
       if (!message || !this.channel) return;
       try {
         const payload = JSON.parse(message.content.toString('utf8'));
-        await this.invoicesService.handleOrdersEvent(payload);
+        const result = await this.invoicesService.handleOrdersEvent(payload);
+        this.logConsumeResult(payload, result, message.fields?.routingKey);
         this.channel.ack(message);
       } catch (error) {
-        this.logger.error('Orders event consume failed', error instanceof Error ? error.stack : undefined, 'RabbitMqOrdersConsumer');
+        this.logger.error('Orders event consume failed', error instanceof Error ? error.stack : undefined, 'RabbitMqOrdersConsumer', {
+          routingKey: message.fields?.routingKey,
+          messageId: message.properties?.messageId,
+        });
         this.channel.nack(message, false, false);
       }
     });
@@ -52,5 +56,37 @@ export class RabbitMqOrdersConsumer implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.channel) await this.channel.close().catch(() => undefined);
     if (this.connection) await this.connection.close().catch(() => undefined);
+  }
+
+  private logConsumeResult(payload: unknown, result: { action: string; reason?: string; eventId?: string }, routingKey?: string) {
+    const event = this.eventMetadata(payload);
+    const metadata = {
+      routingKey,
+      eventType: event.type,
+      eventId: event.eventId || result.eventId,
+      orderId: event.orderId,
+      action: result.action,
+      reason: result.reason,
+    };
+
+    if (result.action === 'ignored') {
+      this.logger.warn('Orders event ignored by invoices consumer', 'RabbitMqOrdersConsumer', metadata);
+      return;
+    }
+
+    this.logger.log('Orders event consumed by invoices consumer', 'RabbitMqOrdersConsumer', metadata);
+  }
+
+  private eventMetadata(payload: unknown): { type?: string; eventId?: string; orderId?: string } {
+    if (!payload || typeof payload !== 'object') return {};
+    const event = payload as { type?: unknown; eventId?: unknown; payload?: unknown };
+    const body = event.payload && typeof event.payload === 'object'
+      ? event.payload as { orderId?: unknown }
+      : {};
+    return {
+      type: typeof event.type === 'string' ? event.type : undefined,
+      eventId: typeof event.eventId === 'string' ? event.eventId : undefined,
+      orderId: typeof body.orderId === 'string' ? body.orderId : undefined,
+    };
   }
 }
