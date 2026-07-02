@@ -407,6 +407,29 @@ Validation:
 - `git diff --check`: passed.
 
 
+## 2026-07-02 - Core Runtime Prerequisites Closed
+
+Re-ran the live runtime gates after the storage contract commit:
+
+- `npm run verify:runtime-prereqs`: passed. Vault key presence checks for
+  `secret/prod/invoices-microservice`, the `invoices` database check, and
+  Orders, Payments, Notifications, Logging, and RabbitMQ readiness all passed.
+- `npm run verify:final-smoke-prereqs`: failed closed, as expected, on
+  final-smoke-only gates:
+  `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`,
+  `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
+  `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, and
+  `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`.
+- Payments API key registration with `payments:read`, Notifications token
+  projection, and Notifications no-send `invoices.documents` validation are
+  verified present.
+
+Next action: configure the Notifications channel policy and seller legal
+secret, then deploy invoices with the public base URL and consumer switch only
+when the integration owner opens the final smoke lane.
+
+
 ## 2026-07-02 - Logging Contract Hardening
 
 Added test-covered source evidence for the Logging integration:

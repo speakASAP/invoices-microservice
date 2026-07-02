@@ -10,13 +10,11 @@ completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
 current_chunk: Final-smoke prerequisite verification and runtime provisioning
 blockers:
-  - [MISSING: Vault path secret/prod/invoices-microservice with core runtime key names]
-  - [MISSING: invoices database provisioning or owner-approved DB_AUTO_CREATE=true first deploy]
-  - [MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]
   - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
-  - [MISSING: deployed invoices workload and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
+  - [MISSING: deployed invoices workload, INVOICES_PUBLIC_BASE_URL, and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
   - [MISSING: final-smoke prerequisite verifier passing in live runtime]
+  - [MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]
   - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
 ```
 
@@ -145,6 +143,17 @@ retention policy, DB object-reference migration, upload/presign client, and
 backfill/rollback plan are approved and implemented. Validation passed:
 `npm run verify:contracts`, `npm run verify:runtime-readiness`, `npm test`,
 and `git diff --check`.
+
+2026-07-02 continuation: Live core runtime prerequisites now pass without
+printing secret values. `npm run verify:runtime-prereqs` confirms
+`secret/prod/invoices-microservice` exists with required key names, the
+`invoices` database exists, and Orders, Payments, Notifications, Logging, and
+RabbitMQ are ready `1/1`. `npm run verify:final-smoke-prereqs` still fails
+closed on missing invoices deployment, missing `INVOICES_PUBLIC_BASE_URL`,
+`ORDERS_EVENTS_CONSUMER_ENABLED=true` not enabled, missing seller legal secret,
+missing Notifications `invoices.documents` channel policy, and the not-yet-run
+final smoke gate. Payments key registration and Notifications token projection
+are verified present.
 
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final

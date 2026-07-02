@@ -194,7 +194,11 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 ```
 
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
-`verify:final-smoke-prereqs` passes. If either runtime verifier fails, stop.
+`verify:final-smoke-prereqs` passes. Current live state has
+`verify:runtime-prereqs` passing while `verify:final-smoke-prereqs` still fails
+closed on deploy/public URL/consumer switch, seller legal secret, and
+Notifications channel policy. If either runtime verifier fails in the final run,
+stop.
 
 ### Case 1: Order Created Creates Proforma
 
@@ -420,9 +424,9 @@ Merge/order of operations:
 
 ## Open Blockers
 
-- `[MISSING: Vault path secret/prod/invoices-microservice]`
-- `[MISSING: database invoices]`
-- `[MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]`
+- `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
+- `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
+- `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`

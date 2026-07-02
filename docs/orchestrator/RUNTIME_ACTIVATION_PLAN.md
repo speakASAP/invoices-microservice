@@ -36,14 +36,18 @@ lane until the owner approves the specific runtime action.
 
 Last observed on 2026-07-02:
 
-- `npm run verify:runtime-prereqs`: fails closed on
-  `[MISSING: Vault path secret/prod/invoices-microservice]` and
-  `[MISSING: database invoices]`.
+- `npm run verify:runtime-prereqs`: passes. Vault key presence checks,
+  `invoices` database existence, and Orders, Payments, Notifications, Logging,
+  and RabbitMQ readiness are all verified without printing secret values.
 - Orders, Payments, Notifications, Logging, and RabbitMQ all report ready
   `1/1`.
-- `npm run verify:final-smoke-prereqs`: fails closed because core runtime
-  prerequisites fail and because final-smoke-only deploy/delivery/legal gates
-  are not configured yet.
+- `npm run verify:final-smoke-prereqs`: fails closed because final-smoke-only
+  deploy/delivery/legal gates are not configured yet:
+  `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`,
+  `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
+  `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, and
+  `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`.
 
 ## Parallel Runtime Workstreams
 
@@ -99,9 +103,9 @@ Last observed on 2026-07-02:
 
 ## Remaining Blockers
 
-- `[MISSING: Vault path secret/prod/invoices-microservice]`
-- `[MISSING: database invoices]`
-- `[MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]`
+- `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
+- `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
+- `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: Notifications channel_registry policy for invoices.documents]`
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
