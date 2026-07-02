@@ -10,7 +10,6 @@ completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
 current_chunk: Final-smoke prerequisite verification and runtime provisioning
 blockers:
-  - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
   - [MISSING: deployed invoices workload, INVOICES_PUBLIC_BASE_URL, and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
   - [MISSING: final-smoke prerequisite verifier passing in live runtime]
@@ -24,8 +23,8 @@ blockers:
 event-driven trigger contract, database model, annual invoice sequences, HTML
 document rendering, opaque download-token access, and optional client stubs for
 Orders, Payments, Notifications, and Logging. The service is source-ready but
-not production-ready until runtime secrets, DB provisioning, seller legal
-configuration, Orders service-role access, and runtime storage provisioning are
+not production-ready until seller legal configuration, invoices deployment,
+Orders service-role access, final-smoke evidence, and runtime storage provisioning are
 resolved.
 
 Validation passed on 2026-07-02: `npm run build`, `npm test`, `npm run
@@ -151,9 +150,18 @@ printing secret values. `npm run verify:runtime-prereqs` confirms
 RabbitMQ are ready `1/1`. `npm run verify:final-smoke-prereqs` still fails
 closed on missing invoices deployment, missing `INVOICES_PUBLIC_BASE_URL`,
 `ORDERS_EVENTS_CONSUMER_ENABLED=true` not enabled, missing seller legal secret,
-missing Notifications `invoices.documents` channel policy, and the not-yet-run
-final smoke gate. Payments key registration and Notifications token projection
-are verified present.
+and the not-yet-run final smoke gate. Payments key registration, Notifications
+token projection, Notifications `invoices.documents` channel policy, and
+Notifications no-send validation are verified present.
+
+2026-07-02 continuation: Fixed a false-negative in
+`scripts/check-final-smoke-prereqs.sh` where the Notifications channel policy
+SQL was fragile inside nested shell quoting. The verifier now pipes SQL into
+`psql` through `kubectl exec -i` and keeps the service/purpose/channel values
+as quoted psql variables. Live recheck confirms
+`Notifications invoices.documents channel policy allows
+invoices-microservice/transactional`; final smoke remains blocked only by
+missing invoices deployment/config/consumer switch and seller legal secret.
 
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final

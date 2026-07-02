@@ -36,6 +36,7 @@ assert(!runtimePrereqs.includes('INVOICE_SELLER_NAME'), 'runtime prereq gate mus
 assert(packageJson.includes('verify:final-smoke-prereqs'), 'final smoke prereq verifier script is not registered');
 assert(finalSmokePrereqs.includes('PAYMENT_API_KEY_SCOPES'), 'final smoke verifier must check Payments API key scope');
 assert(finalSmokePrereqs.includes('channel_registry'), 'final smoke verifier must check Notifications channel policy');
+assert(finalSmokePrereqs.includes('kubectl exec -i'), 'final smoke verifier must pipe Notifications channel SQL safely into Postgres');
 assert(finalSmokePrereqs.includes('INVOICE_SELLER_NAME'), 'final smoke verifier must check seller legal data');
 assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smoke verifier must check Orders consumer enablement');
 assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');

@@ -257,19 +257,37 @@ check_notifications_channel_policy() {
     return
   fi
 
-  local postgres_pod result
+  local postgres_pod result sql
   postgres_pod="$(find_postgres_pod)"
   if [ -z "$postgres_pod" ]; then
     missing_item "running Postgres pod matching ${POSTGRES_MATCH} in namespace ${NAMESPACE}"
     return
   fi
 
-  result="$(kubectl exec -n "$NAMESPACE" "$postgres_pod" -- env \
+  sql="$(cat <<'SQL'
+select case when exists (
+  select 1
+  from channel_registry
+  where "channelKey" = :'channel'
+    and "isActive" = true
+    and (
+      coalesce(cardinality("applicationsAllowed"), 0) = 0
+      or :'service' = any("applicationsAllowed")
+    )
+    and (
+      coalesce(cardinality("purposesAllowed"), 0) = 0
+      or :'purpose' = any("purposesAllowed")
+    )
+) then 'ok' else 'missing' end;
+SQL
+)"
+
+  result="$(printf '%s\n' "$sql" | kubectl exec -i -n "$NAMESPACE" "$postgres_pod" -- env \
     CHECK_DB_NAME="$NOTIFICATIONS_DB_NAME" \
     CHECK_CHANNEL_KEY="$NOTIFICATIONS_CHANNEL_KEY" \
     CHECK_SERVICE="$NOTIFICATIONS_SERVICE_NAME" \
     CHECK_PURPOSE="$NOTIFICATIONS_PURPOSE" \
-    sh -lc 'psql -U "$POSTGRES_USER" -d "$CHECK_DB_NAME" -v channel="$CHECK_CHANNEL_KEY" -v service="$CHECK_SERVICE" -v purpose="$CHECK_PURPOSE" -tAc "select case when exists (select 1 from channel_registry where \"channelKey\" = :'\''channel'\'' and \"isActive\" = true and (coalesce(cardinality(\"applicationsAllowed\"), 0) = 0 or :'\''service'\'' = any(\"applicationsAllowed\")) and (coalesce(cardinality(\"purposesAllowed\"), 0) = 0 or :'\''purpose'\'' = any(\"purposesAllowed\"))) then '\''ok'\'' else '\''missing'\'' end;"' 2>/dev/null || true)"
+    sh -lc 'psql -U "$POSTGRES_USER" -d "$CHECK_DB_NAME" -v channel="$CHECK_CHANNEL_KEY" -v service="$CHECK_SERVICE" -v purpose="$CHECK_PURPOSE" -tA' 2>/dev/null || true)"
 
   if [ "$(printf '%s' "$result" | tr -d '[:space:]')" = "ok" ]; then
     ok "Notifications ${NOTIFICATIONS_CHANNEL_KEY} channel policy allows ${NOTIFICATIONS_SERVICE_NAME}/${NOTIFICATIONS_PURPOSE}"

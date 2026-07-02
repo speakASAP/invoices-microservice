@@ -115,7 +115,8 @@ ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run veri
      `676b662` no-send readiness contract, or equivalent.
    - `secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN` is projected
      into Notifications as `INVOICES_NOTIFICATIONS_SERVICE_TOKEN`.
-   - `[MISSING: Notifications channel_registry row/policy for channelKey invoices.documents allowing service invoices-microservice and purpose transactional]`
+   - Runtime `invoices.documents` channel policy currently allows
+     `invoices-microservice` with `transactional` purpose.
    - No real notification send is allowed without explicit approval and an
      approved internal recipient.
 
@@ -196,9 +197,9 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
 `verify:final-smoke-prereqs` passes. Current live state has
 `verify:runtime-prereqs` passing while `verify:final-smoke-prereqs` still fails
-closed on deploy/public URL/consumer switch, seller legal secret, and
-Notifications channel policy. If either runtime verifier fails in the final run,
-stop.
+closed on deploy/public URL/consumer switch and seller legal secret. The
+Notifications token, channel policy, and no-send validation gates pass. If
+either runtime verifier fails in the final run, stop.
 
 ### Case 1: Order Created Creates Proforma
 
@@ -408,8 +409,8 @@ Expected result:
 | Workstream | Status | Owner | Dependency | Handoff |
 | --- | --- | --- | --- | --- |
 | Final smoke design | dependency-gated | final smoke lane | runtime gates | This runbook |
-| Runtime provisioning | blocked | platform/secrets owner | Vault, DB, scaling | Close `verify:runtime-prereqs` and `verify:final-smoke-prereqs` |
-| Notifications delivery | dependency-gated | notifications owner | token projection, channel row | Confirm `invoices.documents` policy |
+| Runtime provisioning | partially-complete | platform/secrets owner | Vault, DB, scaling | `verify:runtime-prereqs` passes; final smoke still waits on deploy/legal gates |
+| Notifications delivery | complete-for-no-send | notifications owner | token projection, channel row | `invoices.documents` policy and no-send validation pass |
 | Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID` |
 | Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order |
 
@@ -430,7 +431,6 @@ Merge/order of operations:
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
-- `[MISSING: Notifications channel_registry row/policy for invoices.documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
 - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
 - `[MISSING: proof every active checkout/payment path uses central Orders UUIDs]`

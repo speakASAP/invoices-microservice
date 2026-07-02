@@ -419,15 +419,35 @@ Re-ran the live runtime gates after the storage contract commit:
   `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`,
   `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
-  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, and
-  `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`.
+  and `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
 - Payments API key registration with `payments:read`, Notifications token
   projection, and Notifications no-send `invoices.documents` validation are
   verified present.
+- Notifications `invoices.documents` channel policy is verified present and
+  allows `invoices-microservice/transactional`.
 
-Next action: configure the Notifications channel policy and seller legal
-secret, then deploy invoices with the public base URL and consumer switch only
-when the integration owner opens the final smoke lane.
+Next action: configure the seller legal secret, then deploy invoices with the
+public base URL and consumer switch only when the integration owner opens the
+final smoke lane.
+
+## 2026-07-02 - Final Smoke Notifications Policy Verifier Fixed
+
+Fixed a false-negative in `scripts/check-final-smoke-prereqs.sh`: the live
+Notifications `channel_registry` row existed, but the invoices-side verifier
+used a fragile one-line SQL command inside nested shell quoting and reported
+the policy as missing. The check now pipes SQL into `psql` through
+`kubectl exec -i` and uses psql-quoted variables for channel, service, and
+purpose.
+
+Validation:
+
+- Direct read-only SQL against the `notifications` database returned one active
+  `invoices.documents` row with `purposesAllowed={transactional}` and
+  `applicationsAllowed={invoices-microservice}`.
+- `npm run verify:final-smoke-prereqs` now reports
+  `OK: Notifications invoices.documents channel policy allows invoices-microservice/transactional`.
+- Remaining final-smoke blockers are only deployment/config/consumer switch and
+  seller legal secret.
 
 
 ## 2026-07-02 - Logging Contract Hardening

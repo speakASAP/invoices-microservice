@@ -42,21 +42,23 @@ Last observed on 2026-07-02:
 - Orders, Payments, Notifications, Logging, and RabbitMQ all report ready
   `1/1`.
 - `npm run verify:final-smoke-prereqs`: fails closed because final-smoke-only
-  deploy/delivery/legal gates are not configured yet:
+  deploy/legal gates are not configured yet:
   `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`,
   `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
-  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, and
-  `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`.
+  and `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
+- Payments API key scope, Notifications token projection, Notifications
+  `invoices.documents` channel policy, and Notifications no-send validation
+  are verified present.
 
 ## Parallel Runtime Workstreams
 
 | Lane | Status | Owner | Scope | Forbidden | Validation |
 | --- | --- | --- | --- | --- | --- |
-| A Vault core | approval-gated | platform/secrets owner | create `secret/prod/invoices-microservice` keys: `DB_PASSWORD`, `INVOICES_INTERNAL_SERVICE_TOKEN`, `ORDERS_SERVICE_TOKEN`, `PAYMENTS_API_KEY`, `NOTIFICATIONS_SERVICE_TOKEN` | printing secret values; placeholder values | `npm run verify:runtime-prereqs` key-presence checks |
-| B Database | approval-gated | DB/platform owner | provision `invoices` database, or explicitly approve one first deploy with `DB_AUTO_CREATE=true` | implicit DB create; destructive DB operations | `npm run verify:runtime-prereqs` database check |
-| C Payments key | dependency-gated | Payments owner | register the invoices `PAYMENTS_API_KEY` in Payments `API_KEYS` with `payments:read` scope | sharing raw keys in docs/logs | `npm run verify:final-smoke-prereqs` scope check |
-| D Notifications delivery | dependency-gated | Notifications owner | project `INVOICES_NOTIFICATIONS_SERVICE_TOKEN`, configure active `invoices.documents` policy for `invoices-microservice` and `transactional` | real customer sends before approval | `npm run verify:final-smoke-prereqs`; Notifications no-send readiness |
+| A Vault core | complete | platform/secrets owner | `secret/prod/invoices-microservice` keys exist: `DB_PASSWORD`, `INVOICES_INTERNAL_SERVICE_TOKEN`, `ORDERS_SERVICE_TOKEN`, `PAYMENTS_API_KEY`, `NOTIFICATIONS_SERVICE_TOKEN` | printing secret values; placeholder values | `npm run verify:runtime-prereqs` passes key-presence checks |
+| B Database | complete | DB/platform owner | `invoices` database exists | implicit DB create; destructive DB operations | `npm run verify:runtime-prereqs` database check passes |
+| C Payments key | complete | Payments owner | invoices `PAYMENTS_API_KEY` is registered in Payments `API_KEYS` with `payments:read` scope | sharing raw keys in docs/logs | `npm run verify:final-smoke-prereqs` scope check passes |
+| D Notifications delivery | complete-for-no-send | Notifications owner | `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` is projected; active `invoices.documents` policy allows `invoices-microservice` and `transactional` | real customer sends before approval | `npm run verify:final-smoke-prereqs`; Notifications no-send readiness pass |
 | E Seller legal | approval-gated | legal/platform owner | create `invoices-microservice-seller-secret` with seller legal identity and tax/company identifier | fake legal identity | `npm run verify:final-smoke-prereqs` seller checks |
 | F Deploy switch | dependency-gated | integration owner | deploy workload, set `INVOICES_PUBLIC_BASE_URL=https://invoices.alfares.cz`; enable `ORDERS_EVENTS_CONSUMER_ENABLED=true` only for final smoke | enabling consumer before DB/Vault pass | `npm run verify:final-smoke-prereqs` deployment/config checks |
 | G Final smoke | dependency-gated | validation owner | synthetic order, proforma invoice, paid event, final tax invoice, account download, logging evidence | real customer order/payment/notification | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` |
@@ -106,7 +108,6 @@ Last observed on 2026-07-02:
 - `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
 - `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
 - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
-- `[MISSING: Notifications channel_registry policy for invoices.documents]`
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
