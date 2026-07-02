@@ -77,3 +77,17 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
+
+## 2026-07-02 - Manifest Admission Recheck
+
+Rechecked platform state after the k3s/node restart settled further.
+`kubectl apply --dry-run=server -f k8s/configmap.yaml -f
+k8s/external-secret.yaml -f k8s/deployment.yaml -f k8s/service.yaml -f
+k8s/ingress.yaml -n statex-apps` now passes for all invoices manifests,
+including the ExternalSecret.
+
+Deployment remains blocked because runtime prerequisites are still not closed:
+
+- `[MISSING: invoices database exists or owner-approved DB_AUTO_CREATE=true first deploy]`
+- `[MISSING: secret/prod/invoices-microservice values for DB password, internal token, Orders token, Payments API key, Notifications token, and seller legal fields]`
+- `[MISSING: core dependencies ready for deploy smoke: Orders, Payments, Notifications, Logging, RabbitMQ]`

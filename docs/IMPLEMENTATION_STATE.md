@@ -51,6 +51,13 @@ access remains protected by opaque token hash verification.
 Validation passed: `npm run build`, `npm test`, `npm run verify:contracts`,
 `npm run verify:runtime-readiness`, and `git diff --check`.
 
+2026-07-02 continuation: Manifest admission recheck now passes with
+server-side dry-run for ConfigMap, ExternalSecret, Deployment, Service, and
+Ingress. Deployment remains blocked by missing runtime provisioning and core
+dependency readiness: invoices database/DB auto-create decision, Vault values
+under `secret/prod/invoices-microservice`, and ready Orders/Payments/
+Notifications/Logging/RabbitMQ pods for smoke validation.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains
