@@ -16,6 +16,8 @@ data:
   DB_USER: "dbadmin"
   DB_NAME: "invoices"
   DB_SYNC: "false"
+  DB_AUTO_CREATE: "false"
+  DB_ADMIN_DATABASE: "postgres"
   DB_MIGRATIONS_RUN: "true"
   AUTH_SERVICE_URL: "http://auth-microservice.statex-apps.svc.cluster.local:3370"
   ORDERS_SERVICE_URL: "http://orders-microservice.statex-apps.svc.cluster.local:3203"

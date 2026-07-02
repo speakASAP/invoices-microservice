@@ -5,6 +5,7 @@ import { join } from 'path';
 import { InvoiceDocument } from './invoices/entities/invoice-document.entity';
 import { InvoiceEventRecord } from './invoices/entities/invoice-event-record.entity';
 import { InvoiceSequenceCounter } from './invoices/entities/invoice-sequence-counter.entity';
+import { ensureDatabaseExistsFromEnv } from './database-bootstrap';
 
 const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -25,7 +26,14 @@ const dataSourceOptions: DataSourceOptions = {
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions)],
+  imports: [
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        await ensureDatabaseExistsFromEnv();
+        return dataSourceOptions;
+      },
+    }),
+  ],
   exports: [TypeOrmModule],
 })
 export class DatabaseModule {}

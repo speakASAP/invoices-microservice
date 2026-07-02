@@ -33,6 +33,17 @@ all manifests. Server-side dry-run passed for ConfigMap, Deployment, Service,
 and Ingress; ExternalSecret server validation is blocked by
 `[MISSING: external-secrets-webhook endpoints available for server-side validation]`.
 
+2026-07-02 continuation: Added runtime readiness hardening for first deploy.
+The database bootstrap path is now explicit and opt-in through
+`DB_AUTO_CREATE=true`; production config keeps it disabled by default until the
+database is either pre-provisioned or owner-approved for first deploy creation.
+`npm run verify:runtime-readiness` validates DB bootstrap gating, consumer
+fail-closed config, ExternalSecret API version, and secret projection.
+Validation passed: `npm run build`, `npm test`, `npm run verify:contracts`,
+`npm run verify:runtime-readiness`, and `git diff --check`. Server-side
+Kubernetes dry-run still has the platform blocker
+`[MISSING: external-secrets-webhook endpoints available for server-side validation]`.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains
