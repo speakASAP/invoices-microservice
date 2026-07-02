@@ -10,9 +10,7 @@ completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
 current_chunk: Final-smoke prerequisite verification and runtime provisioning
 blockers:
-  - [MISSING: seller legal identity and VAT configuration before legal issuance]
-  - [MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
-  - [MISSING: final-smoke prerequisite verifier passing in live runtime]
+  - [MISSING: approved synthetic fixture executor and fixture data for final invoices smoke]
   - [MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]
   - [MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]
   - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
@@ -329,6 +327,27 @@ the guarded smoke still failed closed with `mutation=false` and only
 approval/confirmation env blockers. The remaining FlipFlop gate is now the
 owner-approved synthetic create/read smoke that proves persisted
 `customer.authSubject` in a central Orders snapshot.
+
+2026-07-02 continuation: Closed the live invoices runtime activation gates
+after owner approval. Seller legal values were sourced from existing approved
+Statex/FlipFlop legal configuration and written to
+`secret/prod/invoices-microservice-seller` without printing values; External
+Secrets synced `invoices-microservice-seller-secret` with the required seller
+key names. `runtime:enable-orders-consumer` confirmed the pre-enable gate,
+kept `ORDERS_EVENTS_CONSUMER_ENABLED=true`, and restarted
+`invoices-microservice`. The first enabled pod exposed a real runtime issue:
+`RABBITMQ_URL=amqp://guest:guest@host.k3s.internal:5672` failed DNS resolution
+inside Kubernetes. The live ConfigMap and source runtime contract now use the
+cluster-local broker URL
+`amqp://guest:guest@rabbitmq.statex-apps.svc.cluster.local:5672`. After
+node-level rollout pressure cleared, `invoices-microservice` returned `1/1`,
+`https://invoices.alfares.cz/health` returned success, and
+`npm run verify:final-smoke-prereqs` exited `0` with Orders, Payments,
+Notifications, Logging, RabbitMQ, seller legal, public base URL, consumer
+switch, Payments `payments:read`, Notifications token projection,
+`invoices.documents` policy, and no-send validation all passing. No synthetic
+order, payment provider call, customer notification send, production DB row
+dump, token value print, or final smoke fixture was run.
 
 ## Preserved Intent
 

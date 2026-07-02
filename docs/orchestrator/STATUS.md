@@ -739,3 +739,53 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
+
+
+## 2026-07-02 - Runtime Activation Gates Closed
+
+Closed the owner-approved runtime activation gate for the deployed invoices
+service:
+
+- Seller legal source was created at
+  `secret/prod/invoices-microservice-seller` from existing approved
+  Statex/FlipFlop legal configuration without printing values.
+- `k8s/seller-external-secret.yaml` synced
+  `invoices-microservice-seller-secret`; key-name validation confirms
+  `INVOICE_SELLER_NAME`, `INVOICE_SELLER_ADDRESS`,
+  `INVOICE_SELLER_COMPANY_ID`, `INVOICE_SELLER_TAX_ID`,
+  `INVOICE_SELLER_VAT_ID`, and `INVOICE_SELLER_EMAIL` are present.
+- Live `ORDERS_EVENTS_CONSUMER_ENABLED=true` is active for
+  `invoices-microservice`.
+- Runtime RabbitMQ startup initially failed on
+  `host.k3s.internal`; live config now uses
+  `amqp://guest:guest@rabbitmq.statex-apps.svc.cluster.local:5672`.
+- After transient single-node rollout pressure and unrelated deployment churn,
+  `invoices-microservice` recovered to `1/1` and
+  `https://invoices.alfares.cz/health` returned success.
+- `npm run verify:final-smoke-prereqs` now exits `0`: Orders, Payments,
+  Notifications, Logging, RabbitMQ, invoices deployment, public base URL,
+  seller legal secret, consumer switch, Payments read scope, Notifications
+  token projection, `invoices.documents` policy, and no-send validation all
+  pass.
+
+No synthetic order, payment provider call, notification send, customer contact,
+invoice DB row dump, token value print, or final fixture smoke was run.
+
+Remaining blockers:
+
+- `[MISSING: approved synthetic fixture executor that creates a central Orders UUID, preserves/cleans Warehouse reservation state, creates a matching Payments snapshot, and completes payment without provider or customer-contact mutation]`
+- `[MISSING: approved synthetic fixture order/customer/payment data]`
+- `[MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
+- `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
+
+Validation:
+
+- `npm run verify:seller-legal-source`: passed.
+- `npm run runtime:sync-seller-legal`: passed and reran pre-consumer final-smoke
+  prerequisites.
+- `npm run runtime:enable-orders-consumer`: prerequisite phase passed; rollout
+  surfaced the RabbitMQ DNS drift that was repaired live.
+- `npm run verify:final-smoke-prereqs`: passed after Orders rollout recovered.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.

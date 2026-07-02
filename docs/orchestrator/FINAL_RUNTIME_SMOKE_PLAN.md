@@ -1,6 +1,6 @@
 # Final Runtime Smoke Plan: Invoices Workflow
 
-Status: dependency-gated.
+Status: runtime-ready; final fixture-gated.
 Owner lane: final integration/runtime smoke.
 Repository: `/home/ssf/Documents/Github/invoices-microservice`.
 Prepared: 2026-07-02.
@@ -31,7 +31,9 @@ the runtime blockers below are resolved.
 
 ## Current Read-Only Evidence
 
-Collected on 2026-07-02 over `ssh alfares`.
+Collected on 2026-07-02 over `ssh alfares`. Latest refresh records runtime
+activation evidence on top of
+`0621740 docs: record flipflop auth subject runtime marker`.
 
 - `invoices-microservice`: current source checkpoint is
   `5a37c9c docs: update FINAL_RUNTIME_SMOKE_PLAN with current state of invoices-microservice and runtime prerequisites`;
@@ -54,19 +56,28 @@ Collected on 2026-07-02 over `ssh alfares`.
   - Notifications ready `1/1`.
   - Logging ready `1/1`.
   - RabbitMQ ready `1/1`.
-- `npm run verify:final-smoke-prereqs`: failed with the remaining strict
-  final-smoke gates:
-  - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
-  - `[MISSING: seller legal secret invoices-microservice-seller-secret]`
+- `npm run verify:final-smoke-prereqs`: passed after the runtime provisioning
+  and parallel enablement lanes closed the strict gates:
+  - `ORDERS_EVENTS_CONSUMER_ENABLED=true` is live for RabbitMQ final smoke.
+  - `RABBITMQ_URL` uses the cluster-local
+    `rabbitmq.statex-apps.svc.cluster.local` service after the previous
+    `host.k3s.internal` value failed DNS resolution inside the enabled pod.
+  - `secret/prod/invoices-microservice-seller` exists and syncs into
+    `invoices-microservice-seller-secret`; required key names are present and
+    values were not printed.
   - Payments API key registration, Notifications token projection,
     `invoices.documents` channel policy, and Notifications no-send validation
     passed.
-- `npm run verify:consumer-enable-prereqs`: failed only on
-  `[MISSING: seller legal secret invoices-microservice-seller-secret]`, while
-  allowing `ORDERS_EVENTS_CONSUMER_ENABLED=false` for the pre-enable gate.
-- `npm run verify:seller-legal-source`: failed on
-  `[MISSING: Vault path secret/prod/invoices-microservice-seller]`; legal
-  issuer data must be provided by the owner and must not be invented.
+- `npm run verify:consumer-enable-prereqs`: superseded by the passing strict
+  `verify:final-smoke-prereqs` gate.
+- `npm run verify:seller-legal-source`: superseded by the synced seller legal
+  source. The lane did not invent or print seller legal values.
+- Read-only invoices database metadata query found no existing
+  `invoice_documents` or `invoice_event_records` rows, so no prior smoke
+  `ORDER_ID` is available for final evidence replay.
+- Parallel process check found unrelated deploy/watch processes and an invoices
+  rollout-status watcher, but no existing invoices final-smoke fixture executor
+  producing invoice rows.
 - Orders verifier: `npm run verify:invoices-read-boundary` passed.
 - Orders verifier: `npm run verify:event-contracts` passed.
 - Payments focused tests:
@@ -80,6 +91,7 @@ Collected on 2026-07-02 over `ssh alfares`.
   31 tests.
 - K8s read-only workload state:
   - `orders-microservice`: desired `1`, ready `1`.
+  - `invoices-microservice`: desired `1`, ready `1`.
   - `payments-microservice`: desired `1`, ready `1`.
   - `notifications-microservice`: desired `1`, ready `1`.
   - `logging-microservice`: desired `1`, ready `1`.
@@ -215,14 +227,11 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 ```
 
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
-`verify:final-smoke-prereqs` passes. Current live state has
-`verify:runtime-prereqs` passing while `verify:final-smoke-prereqs` still fails
-closed on consumer switch and seller legal secret. The pre-enable gate
-`verify:consumer-enable-prereqs` allows the consumer switch to stay disabled and
-currently fails only on the missing seller legal secret. Invoices deployment,
-public base URL, Payments key scope, Notifications token, Notifications channel
-policy, and Notifications no-send validation gates pass. If either runtime
-verifier fails in the final run, stop.
+`verify:final-smoke-prereqs` passes. Current live state has both runtime
+verifiers passing. Invoices deployment, public base URL, Orders consumer switch,
+seller legal secret sync, Payments key scope, Notifications token, Notifications
+channel policy, and Notifications no-send validation gates pass. If either
+runtime verifier fails in the final run, stop.
 
 Before enabling the Orders consumer, run:
 
@@ -242,6 +251,17 @@ consumer only through:
 ```bash
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run runtime:enable-orders-consumer'
 ```
+
+Do not treat the Cliplot `live-order-warehouse-smoke-executor` as sufficient
+for this final invoices smoke by itself: it is Orders/Warehouse-only and
+explicitly excludes payment creation, payment completion, and notification
+delivery. The final fixture must either use an approved channel/payment path
+that creates a central Orders UUID and a matching completed Payments DB snapshot,
+or a separately approved synthetic fixture executor owned by the integration
+lane. Current blocker: `[MISSING: approved synthetic fixture executor that
+creates a central Orders UUID, preserves/cleans Warehouse reservation state,
+creates a matching Payments snapshot, and completes payment without provider or
+customer-contact mutation]`.
 
 After the approved synthetic fixture has created the central Orders UUID and
 Payments has completed the matching fixture payment, capture automated
@@ -470,27 +490,24 @@ Expected result:
 
 | Workstream | Status | Owner | Dependency | Handoff |
 | --- | --- | --- | --- | --- |
-| Final smoke design | dependency-gated | final smoke lane | runtime gates | This runbook |
-| Runtime provisioning | partially-complete | platform/secrets owner | Vault, DB, scaling, invoices deployment, guarded consumer switch | `verify:runtime-prereqs` passes; invoices is deployed; final smoke still waits on legal/consumer gates |
-| Notifications delivery | complete-for-no-send | notifications owner | token projection, channel row | `invoices.documents` policy and no-send validation pass |
-| Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID` |
-| Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order and run `npm run verify:final-smoke-evidence` |
+| Final smoke design | complete-for-current-gates | final smoke lane | runtime gates | This runbook |
+| Runtime provisioning | complete-for-final-prereqs | platform/secrets owner | Vault, DB, scaling, invoices deployment, guarded consumer switch | `verify:runtime-prereqs` and `verify:final-smoke-prereqs` pass; seller secret and consumer switch are live |
+| Notifications delivery | complete-for-no-send | notifications owner | token projection, channel row | `invoices.documents` policy and no-send validation pass; real sends still require separate approval |
+| Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment/Warehouse fixture | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID`, fixture cleanup/rollback evidence |
+| Final execution | final integration | orchestrator | fixture gate closed | Execute cases 0-5 in order and run `npm run verify:final-smoke-evidence` |
 
 Merge/order of operations:
-1. Runtime provisioning closes Vault, DB, and scaled dependency gates.
-2. Notifications lane lands/deploys identity and channel policy.
-3. Orchestrator runs `npm run verify:final-smoke-prereqs` and closes its gates.
-4. Orchestrator approves invoices deployment and consumer enable.
-5. Orchestrator creates the synthetic fixture and runs the final smoke.
-6. Validation owner runs `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence` and captures API, DB, Payments, and optional account/logging evidence without secrets or raw customer data.
+1. Runtime provisioning has closed Vault, DB, scaled dependency, seller legal, and Orders consumer gates for the current final-smoke prerequisite verifier.
+2. Notifications lane has closed token projection, channel policy, and no-send validation gates; real sends still require separate approval.
+3. Orchestrator keeps the current `npm run verify:final-smoke-prereqs` pass as the runtime gate evidence.
+4. Orchestrator provides or approves a synthetic fixture executor that creates a central Orders UUID, preserves or cleans Warehouse reservation state, creates a matching Payments snapshot, and completes payment without provider/customer-contact mutation.
+5. Validation owner runs `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence` and captures API, DB, Payments, and optional account/logging evidence without secrets or raw customer data.
 
 ## Open Blockers
 
-- `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
-- `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
-- `[MISSING: seller legal secret values for successful issuance]`
-- `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
+- `[MISSING: approved synthetic fixture executor that creates a central Orders UUID, preserves/cleans Warehouse reservation state, creates a matching Payments snapshot, and completes payment without provider or customer-contact mutation]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
+- `[MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]`
 - `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 - `[MISSING: proof every active checkout/payment path uses central Orders UUIDs]`
