@@ -42,14 +42,12 @@ Last observed on 2026-07-02:
 - Orders, Payments, Notifications, Logging, and RabbitMQ all report ready
   `1/1`.
 - `npm run verify:final-smoke-prereqs`: fails closed because final-smoke-only
-  deploy/legal gates are not configured yet:
-  `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`,
-  `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
+  legal/consumer gates are not configured yet:
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
   and `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
-- Payments API key scope, Notifications token projection, Notifications
-  `invoices.documents` channel policy, and Notifications no-send validation
-  are verified present.
+- Invoices deployment, public base URL, Payments API key scope, Notifications
+  token projection, Notifications `invoices.documents` channel policy, and
+  Notifications no-send validation are verified present.
 
 ## Parallel Runtime Workstreams
 
@@ -60,7 +58,7 @@ Last observed on 2026-07-02:
 | C Payments key | complete | Payments owner | invoices `PAYMENTS_API_KEY` is registered in Payments `API_KEYS` with `payments:read` scope | sharing raw keys in docs/logs | `npm run verify:final-smoke-prereqs` scope check passes |
 | D Notifications delivery | complete-for-no-send | Notifications owner | `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` is projected; active `invoices.documents` policy allows `invoices-microservice` and `transactional` | real customer sends before approval | `npm run verify:final-smoke-prereqs`; Notifications no-send readiness pass |
 | E Seller legal | approval-gated | legal/platform owner | create `invoices-microservice-seller-secret` with seller legal identity and tax/company identifier | fake legal identity | `npm run verify:final-smoke-prereqs` seller checks |
-| F Deploy switch | dependency-gated | integration owner | deploy workload, set `INVOICES_PUBLIC_BASE_URL=https://invoices.alfares.cz`; enable `ORDERS_EVENTS_CONSUMER_ENABLED=true` only for final smoke | enabling consumer before DB/Vault pass | `npm run verify:final-smoke-prereqs` deployment/config checks |
+| F Deploy switch | partially-complete | integration owner | workload deployed with `INVOICES_PUBLIC_BASE_URL=https://invoices.alfares.cz`; enable `ORDERS_EVENTS_CONSUMER_ENABLED=true` only for final smoke after seller legal data exists | enabling consumer before seller legal data exists | `npm run verify:final-smoke-prereqs` deployment/config checks |
 | G Final smoke | dependency-gated | validation owner | synthetic order, proforma invoice, paid event, final tax invoice, account download, logging evidence | real customer order/payment/notification | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` |
 | H Document storage | source-selected-runtime-gated | invoices/storage + MinIO owners | future private MinIO/S3 bucket, object references, checksum verified upload/read, tokenized or presigned access | public bucket, root credentials, object overwrite/delete, raw PDF logs | `docs/orchestrator/INVOICE_DOCUMENT_STORAGE_CONTRACT.md`; future storage smoke |
 
@@ -105,8 +103,6 @@ Last observed on 2026-07-02:
 
 ## Remaining Blockers
 
-- `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
-- `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
 - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`

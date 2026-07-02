@@ -197,9 +197,10 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
 `verify:final-smoke-prereqs` passes. Current live state has
 `verify:runtime-prereqs` passing while `verify:final-smoke-prereqs` still fails
-closed on deploy/public URL/consumer switch and seller legal secret. The
-Notifications token, channel policy, and no-send validation gates pass. If
-either runtime verifier fails in the final run, stop.
+closed on consumer switch and seller legal secret. Invoices deployment, public
+base URL, Payments key scope, Notifications token, Notifications channel policy,
+and Notifications no-send validation gates pass. If either runtime verifier
+fails in the final run, stop.
 
 ### Case 1: Order Created Creates Proforma
 
@@ -409,7 +410,7 @@ Expected result:
 | Workstream | Status | Owner | Dependency | Handoff |
 | --- | --- | --- | --- | --- |
 | Final smoke design | dependency-gated | final smoke lane | runtime gates | This runbook |
-| Runtime provisioning | partially-complete | platform/secrets owner | Vault, DB, scaling | `verify:runtime-prereqs` passes; final smoke still waits on deploy/legal gates |
+| Runtime provisioning | partially-complete | platform/secrets owner | Vault, DB, scaling, invoices deployment | `verify:runtime-prereqs` passes; invoices is deployed; final smoke still waits on legal/consumer gates |
 | Notifications delivery | complete-for-no-send | notifications owner | token projection, channel row | `invoices.documents` policy and no-send validation pass |
 | Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID` |
 | Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order |
@@ -425,8 +426,6 @@ Merge/order of operations:
 
 ## Open Blockers
 
-- `[MISSING: deployment invoices-microservice exists in namespace statex-apps]`
-- `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
 - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: seller legal secret values for successful issuance]`

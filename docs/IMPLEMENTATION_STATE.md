@@ -11,7 +11,7 @@ current_goal: Goal 1 Invoices Issuance MVP
 current_chunk: Final-smoke prerequisite verification and runtime provisioning
 blockers:
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
-  - [MISSING: deployed invoices workload, INVOICES_PUBLIC_BASE_URL, and ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
+  - [MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for final smoke]
   - [MISSING: final-smoke prerequisite verifier passing in live runtime]
   - [MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]
   - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
@@ -170,6 +170,21 @@ failed because the Docker image started `node dist/main.js` while the Nest build
 emits `dist/src/main.js`. The Dockerfile was corrected and
 `verify-runtime-readiness` now asserts the container entrypoint matches the
 build output.
+
+2026-07-02 continuation: Redeployed `invoices-microservice` at commit
+`22c93da` with image digest
+`sha256:451bbb135a681bb91c7fe5425069c68099f6f4f9169fe5c908940deb26310577`.
+Rollout passed, the pod is ready `1/1`, and public
+`https://invoices.alfares.cz/health` returns `success=true`. A Notifications
+runtime drift to image `f144e14` caused invoice no-send validation to return
+401; redeploying `notifications-microservice` from integration commit
+`f855764` restored `/notifications/validate`. Current
+`npm run verify:final-smoke-prereqs` passes core runtime, invoices deployment,
+public base URL, Payments key scope, Notifications token projection,
+Notifications channel policy, and Notifications no-send validation. It still
+fails closed on `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ
+final smoke]` and `[MISSING: seller legal secret
+invoices-microservice-seller-secret]`.
 
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final

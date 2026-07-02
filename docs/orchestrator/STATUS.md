@@ -471,6 +471,41 @@ silently.
 Validation pending in this edit: rebuild, tests, runtime verifiers, redeploy,
 rollout status, in-pod health, and final-smoke prerequisite recheck.
 
+## 2026-07-02 - Invoices Deployed Fail-Closed
+
+Redeployed after the Docker entrypoint fix:
+
+- `./scripts/deploy.sh` passed build, Jest, `verify:contracts`,
+  `verify:runtime-readiness`, and `verify:runtime-prereqs`.
+- Built and pushed `localhost:5000/invoices-microservice:22c93da` with digest
+  `sha256:451bbb135a681bb91c7fe5425069c68099f6f4f9169fe5c908940deb26310577`.
+- Deployment rolled out successfully and the script's in-pod `/health` check
+  passed.
+- Runtime status: `deployment/invoices-microservice` is ready `1/1` on image
+  `localhost:5000/invoices-microservice:22c93da`.
+- Public health endpoint `https://invoices.alfares.cz/health` returns
+  `success=true`.
+- `ORDERS_EVENTS_CONSUMER_ENABLED` remains `false`, so the deployed service is
+  healthy but does not consume Orders events before seller legal data exists.
+
+During post-deploy final-smoke prerequisite checks, Notifications no-send
+validation returned HTTP 401 because the live Notifications deployment had
+drifted to image `f144e14`, which did not accept the invoices service token.
+Redeployed `notifications-microservice` from integration commit `f855764`;
+rollout and health passed, and `./scripts/check-invoices-documents-readiness.sh`
+again passes for proforma and final payloads with HTTP 201,
+`mutation=false`, and `providerCall=false`.
+
+Current `npm run verify:final-smoke-prereqs` result:
+
+- passes: core runtime prerequisites, invoices deployment readiness,
+  `INVOICES_PUBLIC_BASE_URL`, Payments key scope, Notifications token
+  projection, Notifications channel policy, and Notifications no-send
+  validation;
+- fails closed only on
+  `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]` and
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
+
 
 ## 2026-07-02 - Logging Contract Hardening
 
