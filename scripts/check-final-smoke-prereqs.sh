@@ -143,14 +143,28 @@ check_invoices_config_for_final_smoke() {
     return
   fi
 
-  local base_url consumer_enabled
+  local base_url consumer_enabled rabbitmq_url orders_queue
   base_url="$(kubectl get configmap -n "$NAMESPACE" "$INVOICES_CONFIGMAP" -o jsonpath='{.data.INVOICES_PUBLIC_BASE_URL}' 2>/dev/null || true)"
   consumer_enabled="$(kubectl get configmap -n "$NAMESPACE" "$INVOICES_CONFIGMAP" -o jsonpath='{.data.ORDERS_EVENTS_CONSUMER_ENABLED}' 2>/dev/null || true)"
+  rabbitmq_url="$(kubectl get configmap -n "$NAMESPACE" "$INVOICES_CONFIGMAP" -o jsonpath='{.data.RABBITMQ_URL}' 2>/dev/null || true)"
+  orders_queue="$(kubectl get configmap -n "$NAMESPACE" "$INVOICES_CONFIGMAP" -o jsonpath='{.data.INVOICES_ORDERS_QUEUE}' 2>/dev/null || true)"
 
   if [[ "$base_url" == https://* ]]; then
     ok "INVOICES_PUBLIC_BASE_URL is configured with https"
   else
     missing_item "INVOICES_PUBLIC_BASE_URL configured with https"
+  fi
+
+  if [[ "$rabbitmq_url" == amqp://* ]] && [[ "$rabbitmq_url" != *host.k3s.internal* ]]; then
+    ok "RABBITMQ_URL uses cluster-reachable broker"
+  else
+    missing_item "RABBITMQ_URL uses cluster-reachable broker"
+  fi
+
+  if non_placeholder "$orders_queue"; then
+    ok "INVOICES_ORDERS_QUEUE is configured"
+  else
+    missing_item "INVOICES_ORDERS_QUEUE is configured"
   fi
 
   if [ "$consumer_enabled" = "true" ]; then

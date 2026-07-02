@@ -30,6 +30,8 @@ assert(dbBootstrap.includes("env.DB_AUTO_CREATE !== 'true'"), 'DB bootstrap is n
 assert(dbBootstrap.includes('validateDatabaseName'), 'DB bootstrap does not validate database identifiers');
 assert(configMap.includes('DB_AUTO_CREATE: "false"'), 'production ConfigMap must keep DB auto-create disabled by default');
 assert(configMap.includes('DB_ADMIN_DATABASE: "postgres"'), 'DB admin database config missing');
+assert(configMap.includes("RABBITMQ_URL: \"amqp://guest:guest@rabbitmq.statex-apps.svc.cluster.local:5672\""), "production ConfigMap must use the in-cluster RabbitMQ service");
+assert(!configMap.includes("host.k3s.internal"), "production ConfigMap must not use host.k3s.internal for RabbitMQ inside Kubernetes");
 assert(configMap.includes('ORDERS_EVENTS_CONSUMER_ENABLED: "false"'), 'Orders event consumer must stay disabled until runtime blockers close');
 assert(deployment.includes('secretRef:') && deployment.includes('invoices-microservice-secret'), 'deployment does not project invoices secret');
 assert(externalSecret.includes('apiVersion: external-secrets.io/v1'), 'ExternalSecret apiVersion must match the live cluster CRD');
@@ -50,6 +52,8 @@ assert(finalSmokePrereqs.includes('kubectl exec -i'), 'final smoke verifier must
 assert(finalSmokePrereqs.includes('ALLOW_CONSUMER_DISABLED'), 'final smoke verifier must support consumer-disabled pre-enable checks');
 assert(finalSmokePrereqs.includes('INVOICE_SELLER_NAME'), 'final smoke verifier must check seller legal data');
 assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smoke verifier must check Orders consumer enablement');
+assert(finalSmokePrereqs.includes("RABBITMQ_URL uses cluster-reachable broker"), "final smoke verifier must reject non-cluster RabbitMQ URLs");
+assert(finalSmokePrereqs.includes("INVOICES_ORDERS_QUEUE is configured"), "final smoke verifier must check the invoices orders queue name");
 assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');
 assert(finalSmokeEvidenceScript.includes('ORDER_ID'), 'final smoke evidence verifier must require ORDER_ID');
 assert(finalSmokeEvidenceScript.includes('SKIP_FINAL_SMOKE_PREREQS'), 'final smoke evidence verifier must run strict prereqs by default with an explicit skip escape hatch');

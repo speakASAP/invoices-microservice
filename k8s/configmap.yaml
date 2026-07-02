@@ -24,7 +24,7 @@ data:
   PAYMENTS_SERVICE_URL: "http://payments-microservice.statex-apps.svc.cluster.local:3468"
   NOTIFICATIONS_SERVICE_URL: "http://notifications-microservice.statex-apps.svc.cluster.local:3368"
   LOGGING_SERVICE_URL: "http://logging-microservice.statex-apps.svc.cluster.local:3367"
-  RABBITMQ_URL: "amqp://guest:guest@host.k3s.internal:5672"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq.statex-apps.svc.cluster.local:5672"
   ORDERS_EVENTS_EXCHANGE: "orders.events"
   INVOICES_ORDERS_QUEUE: "invoices.orders.lifecycle"
   ORDERS_EVENTS_CONSUMER_ENABLED: "false"
