@@ -33,17 +33,20 @@ the runtime blockers below are resolved.
 
 Collected on 2026-07-02 over `ssh alfares`.
 
-- `invoices-microservice`: source checkpoint before this runbook was
-  `6ef36a4 docs: refresh invoices integration orchestration state`; repo was
-  ahead of origin by 1 commit.
+- `invoices-microservice`: current source checkpoint is
+  `13f4025 docs: record auth subject smoke gate`; repo is ahead of origin by
+  20 commits.
 - `notifications-microservice`: clean `main`, ahead of origin by 2 commits,
   `676b662 test: define invoices notification readiness contract` on top of
   `8a6b7ed feat: allow invoices notifications service actor`.
 - `npm run verify:contracts`: passed in `invoices-microservice`.
 - `npm run verify:runtime-readiness`: passed in `invoices-microservice`.
-- `npm run verify:runtime-prereqs`: failed as expected:
-  - `[MISSING: Vault path secret/prod/invoices-microservice]`
-  - `[MISSING: database invoices]`
+- `npm run verify:runtime-prereqs`: passed:
+  - Vault path `secret/prod/invoices-microservice` exists.
+  - Vault keys `DB_PASSWORD`, `INVOICES_INTERNAL_SERVICE_TOKEN`,
+    `ORDERS_SERVICE_TOKEN`, `PAYMENTS_API_KEY`, and
+    `NOTIFICATIONS_SERVICE_TOKEN` exist.
+  - Database `invoices` exists.
   - Orders ready `1/1`.
   - Payments ready `1/1`.
   - Notifications ready `1/1`.
@@ -75,7 +78,7 @@ The smoke remains blocked until all gates are closed.
 
    ```bash
    ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:runtime-prereqs'
-ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:final-smoke-prereqs'
+   ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:final-smoke-prereqs'
    ```
 
 2. Vault path `secret/prod/invoices-microservice` exists with these key names
