@@ -12,7 +12,9 @@
     "verify:contracts": "node scripts/verify-invoice-contracts.js",
     "verify:runtime-readiness": "node scripts/verify-runtime-readiness.js",
     "verify:runtime-prereqs": "bash scripts/check-runtime-prereqs.sh",
-    "verify:final-smoke-prereqs": "bash scripts/check-final-smoke-prereqs.sh"
+    "verify:final-smoke-prereqs": "bash scripts/check-final-smoke-prereqs.sh",
+    "verify:consumer-enable-prereqs": "ALLOW_CONSUMER_DISABLED=true bash scripts/check-final-smoke-prereqs.sh",
+    "runtime:enable-orders-consumer": "bash scripts/enable-orders-consumer-for-final-smoke.sh"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.1",

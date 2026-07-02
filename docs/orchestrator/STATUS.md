@@ -506,6 +506,26 @@ Current `npm run verify:final-smoke-prereqs` result:
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]` and
   `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
 
+## 2026-07-02 - Guarded Consumer Enable Tooling
+
+Added a guarded path for the final Orders-events consumer switch:
+
+- `npm run verify:consumer-enable-prereqs` runs the final-smoke prerequisite
+  verifier with `ALLOW_CONSUMER_DISABLED=true`. This proves seller legal,
+  Payments, Notifications, deployment, and public URL gates before the RabbitMQ
+  consumer is enabled.
+- `npm run runtime:enable-orders-consumer` refuses to patch runtime unless the
+  pre-enable gate passes, then patches
+  `ORDERS_EVENTS_CONSUMER_ENABLED=true`, restarts `invoices-microservice`, waits
+  for rollout, and reruns the strict final-smoke prerequisite verifier.
+- `verify-runtime-readiness` now asserts the guarded enable script and package
+  commands exist.
+
+The enable script was not executed in this lane because
+`invoices-microservice-seller-secret` is still missing. This preserves the
+fail-closed deployment boundary while making the final smoke switch executable
+once approved seller legal data exists.
+
 
 ## 2026-07-02 - Logging Contract Hardening
 

@@ -19,6 +19,7 @@ NOTIFICATIONS_CHANNEL_KEY="${INVOICES_NOTIFICATION_CHANNEL_KEY:-invoices.documen
 NOTIFICATIONS_SERVICE_NAME="${NOTIFICATIONS_SERVICE_NAME:-invoices-microservice}"
 NOTIFICATIONS_PURPOSE="${NOTIFICATIONS_PURPOSE:-transactional}"
 REQUIRED_PAYMENTS_SCOPE="${REQUIRED_PAYMENTS_SCOPE:-payments:read}"
+ALLOW_CONSUMER_DISABLED="${ALLOW_CONSUMER_DISABLED:-false}"
 
 missing=0
 
@@ -154,6 +155,8 @@ check_invoices_config_for_final_smoke() {
 
   if [ "$consumer_enabled" = "true" ]; then
     ok "ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke"
+  elif [ "$ALLOW_CONSUMER_DISABLED" = "true" ]; then
+    ok "ORDERS_EVENTS_CONSUMER_ENABLED is currently disabled and allowed for pre-enable checks"
   else
     missing_item "ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke"
   fi

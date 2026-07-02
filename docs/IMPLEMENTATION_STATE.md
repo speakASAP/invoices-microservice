@@ -186,6 +186,16 @@ fails closed on `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ
 final smoke]` and `[MISSING: seller legal secret
 invoices-microservice-seller-secret]`.
 
+2026-07-02 continuation: Added guarded consumer-enable tooling for the final
+smoke lane. `npm run verify:consumer-enable-prereqs` runs the final-smoke gate
+with `ORDERS_EVENTS_CONSUMER_ENABLED=false` allowed, so seller legal and all
+other gates can be proved before the RabbitMQ consumer is enabled.
+`npm run runtime:enable-orders-consumer` refuses to patch runtime unless that
+pre-enable gate passes, then patches
+`ORDERS_EVENTS_CONSUMER_ENABLED=true`, rolls `invoices-microservice`, and
+reruns the strict final-smoke prerequisite check. The script was not executed
+because seller legal data is still `[MISSING]`.
+
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
 consumer enablement, seller legal secret, Payments `payments:read` scope for
