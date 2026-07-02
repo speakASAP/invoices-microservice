@@ -44,6 +44,13 @@ Validation passed: `npm run build`, `npm test`, `npm run verify:contracts`,
 Kubernetes dry-run still has the platform blocker
 `[MISSING: external-secrets-webhook endpoints available for server-side validation]`.
 
+2026-07-02 continuation: Added internal guarded document retrieval and
+download-link rotation so delivery/account integrations can recover a document
+link after initial notification delivery is disabled or failed. Public customer
+access remains protected by opaque token hash verification.
+Validation passed: `npm run build`, `npm test`, `npm run verify:contracts`,
+`npm run verify:runtime-readiness`, and `git diff --check`.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains

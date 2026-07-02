@@ -25,8 +25,38 @@ export class InvoicesController {
     return { success: true, data: result };
   }
 
+  @Get('invoices/:invoiceId/document.html')
+  @UseGuards(InternalAuthGuard)
+  async getInternalDocument(
+    @Param('invoiceId') invoiceId: string,
+    @Res() response: Response,
+  ) {
+    const html = await this.invoicesService.getInternalDocumentHtml(invoiceId);
+    if (!html) {
+      throw new ForbiddenException('Invoice document is not available');
+    }
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
+    response.send(html);
+  }
+
+  @Post('invoices/:invoiceId/download-link')
+  @UseGuards(InternalAuthGuard)
+  async createDownloadLink(@Param('invoiceId') invoiceId: string) {
+    const downloadUrl = await this.invoicesService.createDownloadLink(invoiceId);
+    if (!downloadUrl) {
+      throw new ForbiddenException('Invoice download link is not available');
+    }
+    return {
+      success: true,
+      data: {
+        invoiceId,
+        downloadUrl,
+      },
+    };
+  }
+
   @Get('documents/:invoiceId.html')
-  async getDocument(
+  async getPublicDocument(
     @Param('invoiceId') invoiceId: string,
     @Query('token') token: string,
     @Res() response: Response,

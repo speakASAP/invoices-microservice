@@ -54,3 +54,26 @@ Validation:
   Service, and Ingress, but ExternalSecret admission remains blocked because
   `external-secrets-webhook` has no endpoints while the cluster is still
   recreating core pods after a k3s/node restart.
+
+## 2026-07-02 - Internal Document Access And Link Rotation
+
+Added internal guarded document access for delivery/account integrations:
+
+- `GET /invoices/:invoiceId/document.html` returns rendered HTML only to
+  internal callers with `INVOICES_INTERNAL_SERVICE_TOKEN`;
+- `POST /invoices/:invoiceId/download-link` rotates the opaque public download
+  token and returns a fresh public URL for retry delivery or account download
+  surfaces.
+
+The existing public `GET /documents/:invoiceId.html?token=...` remains token
+guarded. This keeps customer-facing links opaque while allowing Notifications
+or a future account surface to recover after a failed initial send without
+reading raw database token hashes.
+
+Validation:
+
+- `npm run build`: passed.
+- `npm test`: passed, 3 suites / 6 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.

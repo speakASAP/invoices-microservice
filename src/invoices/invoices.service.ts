@@ -99,6 +99,23 @@ export class InvoicesService {
     return invoice.documentHtml;
   }
 
+  async getInternalDocumentHtml(invoiceId: string): Promise<string | null> {
+    const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
+    return invoice?.documentHtml || null;
+  }
+
+  async createDownloadLink(invoiceId: string): Promise<string | null> {
+    const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
+    if (!invoice?.documentHtml) {
+      return null;
+    }
+
+    const token = this.generateDownloadToken();
+    invoice.downloadTokenHash = this.hashToken(token);
+    await this.invoiceRepository.save(invoice);
+    return this.buildDownloadUrl(invoice.id, token) || null;
+  }
+
   private async routeVerifiedEvent(event: VerifiedOrdersEvent): Promise<OrdersEventHandlingResult> {
     if (event.type === ORDERS_EVENT_TYPES.created) {
       return this.issueInvoiceForEvent(InvoiceType.PROFORMA, event);

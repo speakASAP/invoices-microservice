@@ -23,6 +23,8 @@ attempts.
 | `GET` | `/health` | Public health check |
 | `GET` | `/invoices/order/:orderId` | Internal read of invoice records for an order |
 | `POST` | `/invoices/events/orders` | Internal synthetic Orders-event ingestion for validation/replay |
+| `GET` | `/invoices/:invoiceId/document.html` | Internal guarded document HTML read |
+| `POST` | `/invoices/:invoiceId/download-link` | Internal guarded public download-link rotation |
 | `GET` | `/documents/:invoiceId.html?token=...` | Customer document download by opaque token |
 
 ## Runtime Blockers
