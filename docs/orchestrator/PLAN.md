@@ -34,4 +34,4 @@ provider, or address payloads for invoice generation.
 | F PDF/durable storage | source-ready-runtime-gated | invoices/storage owner | DB-backed PDF bytes/checksum and secure PDF links; external object storage remains future | PDFKit tests + contract verifier |
 | H Logging contract | source-ready | invoices observability owner | sanitized `POST /api/logs` payload to Logging, fail-open transport | `test/logger.service.spec.ts`, `npm run verify:contracts` |
 
-Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications runtime channel policy -> final smoke -> deploy.
+Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications runtime channel policy -> final smoke -> deploy. Runtime activation details live in `docs/orchestrator/RUNTIME_ACTIVATION_PLAN.md`.

@@ -397,3 +397,18 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
+
+
+## 2026-07-02 - Runtime Activation Plan Refresh
+
+Added `docs/orchestrator/RUNTIME_ACTIVATION_PLAN.md` as the owner-ready,
+non-mutating activation plan for the source-ready invoices service. It splits
+runtime work into approval-gated Vault, database, Payments key, Notifications
+delivery, seller legal, deploy switch, and final smoke lanes with explicit
+forbidden actions and validation commands.
+
+Validation:
+
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.

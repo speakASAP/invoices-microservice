@@ -21,7 +21,11 @@
 - Notifications delivery policy is configured or explicitly disabled.
 - Public document base URL is configured.
 - PDF documents are generated and retrievable through guarded internal and tokenized public endpoints.
+- Logging integration sends sanitized `service=invoices-microservice`
+  payloads to `POST /api/logs` and remains fail-open when Logging is down.
 - Final-smoke-only gates are checked by `npm run verify:final-smoke-prereqs` after core deploy prerequisites close.
+- Runtime activation order and owner boundaries are documented in
+  `docs/orchestrator/RUNTIME_ACTIVATION_PLAN.md`.
 
 ## Deployment Readiness
 
