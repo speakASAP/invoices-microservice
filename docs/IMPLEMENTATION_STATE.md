@@ -304,6 +304,17 @@ passed. The gate still exits `1` only because `[MISSING: seller legal secret
 invoices-microservice-seller-secret]`; keep `ORDERS_EVENTS_CONSUMER_ENABLED`
 disabled until seller legal data exists.
 
+2026-07-02 continuation: FlipFlop now has a guarded auth-subject runtime smoke
+gate in commit `23b22e0 test: add auth subject orders smoke gate`.
+`smoke:orders-auth-subject` is non-mutating by default, requires
+`RUN_LIVE_AUTH_SUBJECT_ORDERS_SMOKE=1`,
+`AUTH_SUBJECT_SMOKE_APPROVAL_ID`,
+`AUTH_SUBJECT_SMOKE_CONFIRM=CREATE_READ_OPTIONAL_CANCEL`, and explicit
+Catalog/Warehouse fixture ids before creating a synthetic central Orders row,
+then reads the Orders snapshot to assert `customer.authSubject` persistence.
+Default preflight proved `mutation=false` and blocked only on missing approval
+inputs. Runtime proof remains `[MISSING]` until the approved smoke is executed.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains

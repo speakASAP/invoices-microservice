@@ -415,6 +415,11 @@ Pre-enable gate:
   core runtime prerequisites, deployed invoices workload, public base URL,
   Payments `payments:read`, Notifications token projection, channel policy,
   and no-send validation passed.
+- FlipFlop commit `23b22e0 test: add auth subject orders smoke gate` added
+  `smoke:orders-auth-subject`. The default run is non-mutating and fail-closed
+  on approval inputs; approved runtime execution with fixture product/warehouse
+  ids is still required before closing the FlipFlop `customer.authSubject`
+  evidence gate.
 - `npm test`: passed, 7 suites / 19 tests.
 - `git diff --check`: passed.
 
