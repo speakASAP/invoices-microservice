@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: invoices-microservice
+  namespace: statex-apps
+  labels:
+    app: invoices-microservice
+    managed-by: codex
+spec:
+  type: ClusterIP
+  selector:
+    app: invoices-microservice
+  ports:
+    - protocol: TCP
+      port: 3204
+      targetPort: 3204
+      name: http

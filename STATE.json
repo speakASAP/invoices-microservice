@@ -1,0 +1,16 @@
+{
+  "v": 1,
+  "project": "invoices-microservice",
+  "stage": "source-scaffold",
+  "health": "not-deployed",
+  "current_goal": "Goal 1 invoices issuance MVP",
+  "next_focus": "Validate source, then resolve runtime config and Orders internal read contract.",
+  "blockers": [
+    "[MISSING: production DB secret and database provisioning for invoices]",
+    "[MISSING: Orders internal service token and Orders allowlist entry for invoices-microservice reads]",
+    "[MISSING: seller legal identity and VAT configuration]",
+    "[MISSING: Notifications service token/channel policy for invoice delivery]",
+    "[MISSING: PDF attachment/storage contract]"
+  ],
+  "updated_at": "2026-07-02"
+}

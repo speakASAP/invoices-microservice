@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: invoices-microservice-config
+  namespace: statex-apps
+  labels:
+    app: invoices-microservice
+    managed-by: codex
+data:
+  NODE_ENV: "production"
+  SERVICE_NAME: "invoices-microservice"
+  DOMAIN: "invoices.alfares.cz"
+  PORT: "3204"
+  DB_HOST: "db-server-postgres"
+  DB_PORT: "5432"
+  DB_USER: "dbadmin"
+  DB_NAME: "invoices"
+  DB_SYNC: "false"
+  DB_MIGRATIONS_RUN: "true"
+  AUTH_SERVICE_URL: "http://auth-microservice.statex-apps.svc.cluster.local:3370"
+  ORDERS_SERVICE_URL: "http://orders-microservice.statex-apps.svc.cluster.local:3203"
+  PAYMENTS_SERVICE_URL: "http://payments-microservice.statex-apps.svc.cluster.local:3468"
+  NOTIFICATIONS_SERVICE_URL: "http://notifications-microservice.statex-apps.svc.cluster.local:3368"
+  LOGGING_SERVICE_URL: "http://logging-microservice.statex-apps.svc.cluster.local:3367"
+  RABBITMQ_URL: "amqp://guest:guest@host.k3s.internal:5672"
+  ORDERS_EVENTS_EXCHANGE: "orders.events"
+  INVOICES_ORDERS_QUEUE: "invoices.orders.lifecycle"
+  ORDERS_EVENTS_CONSUMER_ENABLED: "false"
+  INVOICES_PUBLIC_BASE_URL: "https://invoices.alfares.cz"
+  INVOICES_NOTIFICATION_CHANNEL_KEY: "invoices.documents"

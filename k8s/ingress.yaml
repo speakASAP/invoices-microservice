@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: invoices-microservice
+  namespace: statex-apps
+  labels:
+    app: invoices-microservice
+    managed-by: codex
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - invoices.alfares.cz
+      secretName: invoices-microservice-tls
+  rules:
+    - host: invoices.alfares.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: invoices-microservice
+                port:
+                  number: 3204
