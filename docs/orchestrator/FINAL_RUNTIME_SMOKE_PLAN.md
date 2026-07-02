@@ -418,5 +418,5 @@ Merge/order of operations:
 - `[MISSING: external object-storage/attachment policy if PDF links are insufficient for the delivery channel]`
 - `[MISSING: Notifications channel_registry row/policy for invoices.documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
 - `[MISSING: proof every active checkout/payment path uses central Orders UUIDs]`

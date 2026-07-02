@@ -4,13 +4,13 @@ import { firstValueFrom } from 'rxjs';
 
 type LogMetadata = Record<string, string | number | boolean | null | undefined>;
 
-const SENSITIVE_KEY_PATTERN = /(token|secret|password|authorization|cookie|address|street|email|phone|customer|providerResponse)/i;
+const SENSITIVE_KEY_PATTERN = /(token|secret|password|authorization|cookie|api[_-]?key|address|street|email|phone|customer|providerResponse)/i;
 
 @Injectable()
 export class LoggerService implements NestLoggerService {
   private readonly serviceName = 'invoices-microservice';
-  private readonly loggingServiceUrl = process.env.LOGGING_SERVICE_URL || process.env.LOGGING_SERVICE_INTERNAL_URL;
-  private readonly loggingPath = process.env.LOGGING_SERVICE_API_PATH || '/api/logs';
+  private readonly loggingServiceUrl = (process.env.LOGGING_SERVICE_URL || process.env.LOGGING_SERVICE_INTERNAL_URL || '').trim().replace(/\/+$/, '');
+  private readonly loggingPath = process.env.LOGGING_SERVICE_API_PATH?.trim() || '/api/logs';
 
   constructor(private readonly httpService: HttpService) {}
 
@@ -80,6 +80,8 @@ export class LoggerService implements NestLoggerService {
   private sanitizeString(value: string): string {
     return value
       .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [redacted]')
+      .replace(/\b(token|secret|password|authorization|cookie|api[_-]?key)=([^&\s]+)/gi, '$1=[redacted]')
+      .replace(/\b(token|secret|password|authorization|cookie|api[_-]?key):\s*[^,\s}]+/gi, '$1: [redacted]')
       .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[redacted-email]');
   }
 }

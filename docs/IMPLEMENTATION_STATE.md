@@ -151,6 +151,15 @@ stable customer Auth subject]`. Validation passed: focused account tests,
 `npm run build`, full `npm test`, `npm run verify:contracts`,
 `npm run verify:runtime-readiness`, and `git diff --check`.
 
+2026-07-02 continuation: Strengthened the source-level Logging contract.
+`LoggerService` now redacts bearer tokens, token/secret/password/cookie/API-key
+assignments, email addresses, and sensitive metadata keys before sending
+`POST /api/logs` payloads to `logging-microservice`. Remote logging remains
+fail-open so invoice issuance is not blocked by transient observability
+outages. Validation passed: focused logger tests, `npm run build`, full
+`npm test`, `npm run verify:contracts`, `npm run verify:runtime-readiness`,
+and `git diff --check`.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains

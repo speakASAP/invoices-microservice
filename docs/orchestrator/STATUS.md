@@ -161,7 +161,7 @@ Added source-level customer account access inside `invoices-microservice`:
   document HTML, customer address, or blocked internals are returned.
 
 The lane remains source-only until runtime blockers close. It scopes by email
-because `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+because `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
 is still open.
 
 Validation:
@@ -374,6 +374,26 @@ Validation:
 - `npm test -- --runTestsByPath test/account-invoices.spec.ts`: passed, 8 tests.
 - `npm run build`: passed.
 - `npm test`: passed, 6 suites / 16 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.
+
+
+## 2026-07-02 - Logging Contract Hardening
+
+Added test-covered source evidence for the Logging integration:
+
+- invoices logs are posted as `service=invoices-microservice` to
+  `POST /api/logs`;
+- bearer tokens, email addresses, token/secret/password/cookie/API-key
+  assignments, and sensitive metadata keys are redacted before emission;
+- remote logging failures are swallowed so invoice issuance stays fail-open.
+
+Validation:
+
+- `npm test -- --runTestsByPath test/logger.service.spec.ts`: passed, 3 tests.
+- `npm run build`: passed.
+- `npm test`: passed, 7 suites / 19 tests.
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
