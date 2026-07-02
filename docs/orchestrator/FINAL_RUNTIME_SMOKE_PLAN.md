@@ -516,6 +516,12 @@ Merge/order of operations:
 - 2026-07-02: `FINAL_SMOKE_APPROVED=true npm run runtime:run-final-smoke-fixture` created synthetic `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19`, `PAYMENT_APPLICATION_ID=statex`, `PAYMENT_ID=d275ef54-40c6-42d7-b8f8-3a6be4a0aef4`.
 - `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex npm run verify:final-smoke-evidence` passed.
 - Notifications DB bounded count for the synthetic order ID returned `0`; no notification row/provider-send path was created.
+- 2026-07-02: approved Cliplot synthetic verification also passed after live Orders RabbitMQ URL was repaired to the in-cluster broker and the invoices DB object-reference columns were aligned with the committed idempotent migration.
+  - First Cliplot attempt before the Orders RabbitMQ repair created `ORDER_ID=481ef9cf-6f1f-47c5-88aa-9f9d9ac20eee` and `PAYMENT_ID=c8cab141-de76-46c4-a5fa-804bee2d1118`, but no invoice rows because Orders could not publish lifecycle events.
+  - Passing Cliplot fixture: `ORDER_ID=0a3e7eb8-244f-420b-bce7-67fe8f3d18f1`, `PAYMENT_APPLICATION_ID=cliplot`, `PAYMENT_ID=7f7a1f73-325c-4c34-a0cf-09f309f4f88f`.
+  - `ORDER_ID=0a3e7eb8-244f-420b-bce7-67fe8f3d18f1 PAYMENT_APPLICATION_ID=cliplot npm run verify:final-smoke-evidence` passed.
+  - Evidence included one proforma invoice with `status=sent`, one final invoice with `status=delivery_pending`, processed order-created and order-paid event records, internal invoice list/document access, and Payments status snapshot `completed` with `providerCall=false`, `mutation=false`, and `persistence=false`.
+  - Customer account evidence, logging evidence, and download-link rotation were skipped because the required bearer tokens were not supplied and link rotation mutates token state.
 
 ## Open Blockers
 
