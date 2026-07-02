@@ -125,7 +125,9 @@ ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run veri
      snapshot includes `customer.id`, `customer.authUserId`, `customer.subject`,
      `customer.sub`, `customerId`, `customerUserId`, `authUserId`, or `userId`.
    - Legacy account access still falls back to `orderSnapshot.customer.email`.
-   - `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+   - Deployed Orders includes `c4f1332` and accepts Auth-subject snapshots.
+   - `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+   - `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 
 9. Document storage gate:
    - Current smoke acceptance can use DB-backed immutable PDF bytes and
@@ -469,5 +471,6 @@ Merge/order of operations:
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 - `[MISSING: proof every active checkout/payment path uses central Orders UUIDs]`

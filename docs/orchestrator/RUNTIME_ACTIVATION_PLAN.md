@@ -133,5 +133,6 @@ Last observed on 2026-07-02:
 - `[MISSING: seller legal secret values for successful issuance]`
 - `[MISSING: owner-approved invoices deploy and ORDERS_EVENTS_CONSUMER_ENABLED=true runtime switch]`
 - `[MISSING: approved synthetic fixture order/customer/payment data]`
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 - `[MISSING: runtime MinIO/S3 invoice document bucket, credentials, retention, upload/presign client, migration application, backfill, and checksum smoke]`

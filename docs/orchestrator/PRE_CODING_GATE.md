@@ -9,7 +9,8 @@ Exceptions:
 - `[MISSING: seller legal identity and VAT configuration]`
 - `[MISSING: Notifications service token/channel policy for invoice delivery through channelKey invoices.documents]`
 - `[MISSING: runtime MinIO/S3 bucket, credentials, retention policy, DB object-reference migration, upload/presign client, and backfill plan for off-database PDF tax documents]`
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 
 Coding may proceed for source-only MVP because the implementation fails closed
 when runtime/legal data is missing and deployment remains blocked.

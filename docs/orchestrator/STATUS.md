@@ -143,7 +143,8 @@ Additional blockers:
 
 - `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
 - `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
 
 ## 2026-07-02 - Account Invoice Access Source Lane
@@ -161,8 +162,10 @@ Added source-level customer account access inside `invoices-microservice`:
   document HTML, customer address, or blocked internals are returned.
 
 The lane remains source-only until runtime blockers close. It scopes by email
-because `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
-is still open.
+because `[MISSING: FlipFlop runtime smoke proving authenticated central order
+snapshots carry customer.authSubject]` and `[MISSING: Cliplot hosted Auth
+callback/session contract before authenticated checkout can pass Auth subject]`
+are still open.
 
 Validation:
 
@@ -366,9 +369,10 @@ touching the currently dirty Orders/Auth repositories:
 - `toStoredOrderSnapshot` preserves top-level customer identity fields if
   Orders starts returning them in the internal snapshot.
 
-Remaining blocker:
+Remaining blockers:
 
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 
 Validation:
 
@@ -403,6 +407,14 @@ Validation:
 
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
+
+Pre-enable gate:
+
+- `npm run verify:consumer-enable-prereqs`: failed as expected with only
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]` after
+  core runtime prerequisites, deployed invoices workload, public base URL,
+  Payments `payments:read`, Notifications token projection, channel policy,
+  and no-send validation passed.
 - `npm test`: passed, 7 suites / 19 tests.
 - `git diff --check`: passed.
 
@@ -703,9 +715,19 @@ Integrated read-only sub-agent findings and Orders source follow-up:
 - Invoices account access already matches `customer.authUserId` and
   `customer.subject` in stored order snapshots.
 
-Remaining blocker:
+Runtime evidence:
 
-- `[MISSING: runtime proof that deployed Orders includes c4f1332 and authenticated channel create callers pass Auth subject into new order snapshots]`
+- Deployed Orders image is `localhost:5000/orders-microservice:537a103`.
+- `git merge-base --is-ancestor c4f1332 537a103` exited `0`.
+- `npm run verify:invoices-read-boundary` and
+  `npm run verify:create-order-contract` passed in `orders-microservice`.
+- FlipFlop authenticated checkout source now forwards the UUID-shaped local
+  Auth user id as central Orders `customer.authSubject`.
+
+Remaining blockers:
+
+- `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
+- `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 
 Validation:
 
