@@ -6,7 +6,8 @@ import { LoggerService } from './logger.service';
 
 export interface CustomerAuthUser {
   id?: string;
-  email: string;
+  subject?: string;
+  email?: string;
   roles: string[];
 }
 
@@ -41,13 +42,16 @@ export class CustomerAuthGuard implements CanActivate {
 
       const user = response.data?.user;
       const email = this.normalizeEmail(user?.email);
-      if (!response.data?.valid || !email) {
+      const id = this.normalizeSubject(user?.id);
+      const subject = this.normalizeSubject(user?.sub) || id;
+      if (!response.data?.valid || (!subject && !email)) {
         throw new ForbiddenException('Customer invoice scope is unavailable');
       }
 
       request.customerAuth = {
-        id: typeof user.id === 'string' ? user.id : undefined,
-        email,
+        id: id || undefined,
+        subject: subject || undefined,
+        email: email || undefined,
         roles: Array.isArray(user.roles) ? user.roles.filter((role: unknown): role is string => typeof role === 'string') : [],
       };
       return true;
@@ -75,5 +79,11 @@ export class CustomerAuthGuard implements CanActivate {
     if (typeof value !== 'string') return null;
     const normalized = value.trim().toLowerCase();
     return normalized.includes('@') ? normalized : null;
+  }
+
+  private normalizeSubject(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim().toLowerCase();
+    return normalized || null;
   }
 }

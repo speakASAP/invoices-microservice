@@ -82,10 +82,11 @@ delivery/runtime provisioning work.
 `invoices-microservice`. `GET /invoices/account` and
 `POST /invoices/account/:invoiceId/download-link` validate customer bearer
 tokens through Auth `POST /auth/validate`, then scope by normalized
-`orderSnapshot.customer.email`. Responses omit raw snapshots, document HTML,
-token hashes, customer addresses, and internal event fields. This is an
-email-scoped interim contract because stable Auth subject-to-order matching is
-still `[MISSING]`.
+Auth subject/id when the stored Orders snapshot carries one, with normalized
+`orderSnapshot.customer.email` retained as a legacy fallback. Responses omit
+raw snapshots, document HTML, token hashes, customer addresses, and internal
+event fields. Producer proof that new Orders snapshots always carry a stable
+Auth subject is still `[MISSING]`.
 
 2026-07-02 continuation: Tightened the live runtime preflight so required
 Deployments and StatefulSets must have desired replicas greater than zero. That
@@ -139,6 +140,16 @@ consumer enablement, seller legal secret, Payments `payments:read` scope for
 the invoices API key, Notifications token projection, `invoices.documents`
 channel policy, and the Notifications no-send validation script without
 printing secret values.
+
+2026-07-02 continuation: Added subject-aware customer account matching in
+`invoices-microservice`. Auth validation now preserves `sub`/`id`; account
+listing and customer download-link rotation match stored order snapshots by
+customer Auth subject fields first and keep email fallback for legacy rows.
+This closes the invoices-side source gap, but final smoke remains gated on
+`[MISSING: Orders/Auth producer proof that new order snapshots populate a
+stable customer Auth subject]`. Validation passed: focused account tests,
+`npm run build`, full `npm test`, `npm run verify:contracts`,
+`npm run verify:runtime-readiness`, and `git diff --check`.
 
 ## Preserved Intent
 

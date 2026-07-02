@@ -32,8 +32,10 @@ assert(controller.includes("Get('documents/:invoiceId.pdf')"), 'public PDF docum
 assert(read('src/invoices/entities/invoice-document.entity.ts').includes('documentPdfSha256'), 'PDF checksum persistence missing');
 assert(customerGuard.includes('/auth/validate'), 'customer account access must validate tokens through Auth');
 assert(service.includes("#>> \\'{customer,email}\\'"), 'customer account invoice access must scope by stored customer email');
+assert(service.includes("#>> \\'{customer,authUserId}\\'") && service.includes("#>> \\'{authUserId}\\'"), 'customer account invoice access must support stored Auth subject identity');
+assert(service.includes('findByCustomerIdentity'), 'customer account invoice access must use subject/email identity matching');
 assert(service.includes('uq_invoice_documents_order_type') || read('src/migrations/20260702120000-CreateInvoicesTables.ts').includes('uq_invoice_documents_order_type'), 'order/type uniqueness missing');
 assert(docs.includes('Orders events remain trigger-only'), 'trigger-only Orders event plan missing');
-assert(docs.includes('account-scoped invoice listing'), 'account access plan missing');
+assert(docs.includes('subject/email account-scoped invoice listing'), 'account access plan missing');
 
 console.log('Invoice contract verification passed');

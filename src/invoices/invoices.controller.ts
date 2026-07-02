@@ -32,7 +32,7 @@ export class InvoicesController {
   @UseGuards(CustomerAuthGuard)
   async findForAccount(@Req() request: CustomerRequest) {
     const customer = this.requireCustomer(request);
-    const invoices = await this.invoicesService.findByCustomerEmail(customer.email);
+    const invoices = await this.invoicesService.findByCustomerIdentity(customer);
     return {
       success: true,
       data: invoices.map((invoice) => this.toAccountInvoice(invoice)),
@@ -46,7 +46,7 @@ export class InvoicesController {
     @Req() request: CustomerRequest,
   ) {
     const customer = this.requireCustomer(request);
-    const links = await this.invoicesService.createCustomerDownloadLinks(invoiceId, customer.email);
+    const links = await this.invoicesService.createCustomerDownloadLinksForIdentity(invoiceId, customer);
     if (!links) {
       throw new ForbiddenException('Invoice download link is not available');
     }

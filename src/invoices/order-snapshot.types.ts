@@ -19,6 +19,11 @@ export interface InvoiceAddressSnapshot {
 }
 
 export interface InvoiceCustomerSnapshot {
+  id?: string;
+  userId?: string;
+  authUserId?: string;
+  subject?: string;
+  sub?: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -28,6 +33,10 @@ export interface InvoiceOrderSnapshot {
   id: string;
   channel?: string;
   status?: string;
+  customerId?: string;
+  customerUserId?: string;
+  authUserId?: string;
+  userId?: string;
   currency?: string;
   subtotal?: number | string;
   shippingCost?: number | string;

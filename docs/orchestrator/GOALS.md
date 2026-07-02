@@ -31,7 +31,9 @@ Status: dependency-gated
 - [ ] Integrate with Auth/customer account after Auth invoice-profile/address
       wallet APIs exist.
 - [x] Provide source-level account-scoped invoice listing/download by Auth
-      validated customer email.
+      validated subject with normalized email fallback.
+- [ ] Prove Orders/Auth producer contract populates customer Auth subject in
+      order snapshots for new orders.
 
 ## Goal 4: Corrections And Credit Notes
 

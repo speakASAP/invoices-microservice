@@ -37,6 +37,12 @@ export interface InvoiceDownloadLinks {
   pdfUrl: string | null;
 }
 
+export interface CustomerInvoiceIdentity {
+  id?: string | null;
+  subject?: string | null;
+  email?: string | null;
+}
+
 export interface InvoicePdfDocument {
   content: Buffer;
   mimeType: string;
@@ -107,22 +113,33 @@ export class InvoicesService {
   }
 
   async findByCustomerEmail(email: string): Promise<InvoiceDocument[]> {
-    const normalizedEmail = this.normalizeEmail(email);
-    if (!normalizedEmail) return [];
+    return this.findByCustomerIdentity({ email });
+  }
+
+  async findByCustomerIdentity(identity: CustomerInvoiceIdentity): Promise<InvoiceDocument[]> {
+    const normalized = this.normalizeCustomerIdentity(identity);
+    if (!normalized) return [];
 
     return this.invoiceRepository.createQueryBuilder('invoice')
-      .where('LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email', { email: normalizedEmail })
+      .where(this.customerIdentityWhereClause(), normalized)
       .orderBy('invoice.createdAt', 'ASC')
       .getMany();
   }
 
   async createCustomerDownloadLinks(invoiceId: string, email: string): Promise<InvoiceDownloadLinks | null> {
-    const normalizedEmail = this.normalizeEmail(email);
-    if (!normalizedEmail) return null;
+    return this.createCustomerDownloadLinksForIdentity(invoiceId, { email });
+  }
+
+  async createCustomerDownloadLinksForIdentity(
+    invoiceId: string,
+    identity: CustomerInvoiceIdentity,
+  ): Promise<InvoiceDownloadLinks | null> {
+    const normalized = this.normalizeCustomerIdentity(identity);
+    if (!normalized) return null;
 
     const invoice = await this.invoiceRepository.createQueryBuilder('invoice')
       .where('invoice.id = :invoiceId', { invoiceId })
-      .andWhere('LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email', { email: normalizedEmail })
+      .andWhere(`(${this.customerIdentityWhereClause()})`, normalized)
       .getOne();
 
     if (!invoice?.documentHtml) {
@@ -394,6 +411,10 @@ export class InvoicesService {
     return {
       id: order.id,
       channel: order.channel,
+      customerId: order.customerId,
+      customerUserId: order.customerUserId,
+      authUserId: order.authUserId,
+      userId: order.userId,
       status: order.status,
       currency: order.currency,
       subtotal: order.subtotal,
@@ -421,9 +442,38 @@ export class InvoicesService {
     return numeric.toFixed(2);
   }
 
-  private normalizeEmail(value: string): string | null {
+  private normalizeCustomerIdentity(identity: CustomerInvoiceIdentity): { subject: string | null; email: string | null } | null {
+    const subject = this.normalizeSubject(identity.subject) || this.normalizeSubject(identity.id);
+    const email = this.normalizeEmail(identity.email);
+    if (!subject && !email) return null;
+    return { subject, email };
+  }
+
+  private customerIdentityWhereClause(): string {
+    return [
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,id}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,userId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,authUserId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,subject}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,sub}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customerId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customerUserId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{authUserId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{userId}\') = :subject',
+      'LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email',
+    ].map((condition) => `(${condition})`).join(' OR ');
+  }
+
+  private normalizeEmail(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
     const normalized = value.trim().toLowerCase();
     return normalized.includes('@') ? normalized : null;
+  }
+
+  private normalizeSubject(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const normalized = value.trim().toLowerCase();
+    return normalized || null;
   }
 
   private generateDownloadToken(): string {

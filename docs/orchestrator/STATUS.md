@@ -143,7 +143,7 @@ Additional blockers:
 
 - `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
 - `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
-- `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
 
 ## 2026-07-02 - Account Invoice Access Source Lane
@@ -152,7 +152,7 @@ Added source-level customer account access inside `invoices-microservice`:
 
 - `GET /invoices/account` validates the bearer token through Auth
   `POST /auth/validate` and lists only invoices whose stored Orders snapshot
-  has `customer.email` matching the normalized Auth email.
+  matches the normalized Auth subject/id or legacy customer email.
 - `POST /invoices/account/:invoiceId/download-link` validates the same Auth
   customer scope and rotates an opaque public document token without exposing
   `downloadTokenHash`.
@@ -348,3 +348,32 @@ Live blockers reported by `npm run verify:final-smoke-prereqs`:
 
 The dependency workloads remain ready in `verify:runtime-prereqs`, but final
 smoke must not start until the stricter verifier passes.
+
+## 2026-07-02 - Subject-Aware Account Matching
+
+Closed the invoices-side source gap for stable Auth identity matching without
+touching the currently dirty Orders/Auth repositories:
+
+- `CustomerAuthGuard` preserves Auth `sub`/`id` as a normalized account
+  subject after `POST /auth/validate`.
+- `GET /invoices/account` and
+  `POST /invoices/account/:invoiceId/download-link` now scope by stored Orders
+  snapshot subject fields first:
+  `customer.id`, `customer.userId`, `customer.authUserId`, `customer.subject`,
+  `customer.sub`, `customerId`, `customerUserId`, `authUserId`, and `userId`.
+- Legacy snapshots still match by normalized `customer.email`.
+- `toStoredOrderSnapshot` preserves top-level customer identity fields if
+  Orders starts returning them in the internal snapshot.
+
+Remaining blocker:
+
+- `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
+
+Validation:
+
+- `npm test -- --runTestsByPath test/account-invoices.spec.ts`: passed, 8 tests.
+- `npm run build`: passed.
+- `npm test`: passed, 6 suites / 16 tests.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- `git diff --check`: passed.

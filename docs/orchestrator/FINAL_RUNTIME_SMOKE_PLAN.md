@@ -120,9 +120,11 @@ ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run veri
      approved internal recipient.
 
 8. Account identity gate:
-   - Account access is currently email-scoped through
-     `orderSnapshot.customer.email`.
-   - `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+   - Account access prefers a stable Auth subject when the stored Orders
+     snapshot includes `customer.id`, `customer.authUserId`, `customer.subject`,
+     `customer.sub`, `customerId`, `customerUserId`, `authUserId`, or `userId`.
+   - Legacy account access still falls back to `orderSnapshot.customer.email`.
+   - `[MISSING: Orders/Auth producer proof that new order snapshots populate a stable customer Auth subject]`
 
 9. Payments central-order gate:
    - Invoices Vault has `PAYMENTS_API_KEY`.
@@ -139,7 +141,9 @@ Use only a synthetic, owner-approved fixture. Do not use a real customer order.
 - `ORDER_CHANNEL`: approved synthetic channel, for example `flipflop` only if
   that channel is owner-approved for this smoke.
 - `CUSTOMER_EMAIL`: test Auth account email matching the Orders snapshot
-  `customer.email`. Use an internal test mailbox only.
+  `customer.email` for legacy fallback. Use an internal test mailbox only.
+- `CUSTOMER_AUTH_SUBJECT`: Auth subject expected in the Orders snapshot for
+  subject-first account access when the producer contract is available.
 - `CUSTOMER_BEARER_TOKEN`: Auth bearer token for the test account. Do not print.
 - Buyer data in the Orders snapshot:
   - buyer display name or company name.
