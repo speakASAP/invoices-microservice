@@ -221,6 +221,26 @@ consumer only through:
 ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run runtime:enable-orders-consumer'
 ```
 
+After the approved synthetic fixture has created the central Orders UUID and
+Payments has completed the matching fixture payment, capture automated
+evidence without printing secrets, raw customer snapshots, document bodies, PDF
+bytes, or token hashes:
+
+```bash
+ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && ORDER_ID="<ORDER_ID>" PAYMENT_APPLICATION_ID="<PAYMENT_APPLICATION_ID>" npm run verify:final-smoke-evidence'
+```
+
+`verify:final-smoke-evidence` is read-only by default. It runs
+`verify:final-smoke-prereqs`, checks the `invoice_documents` and
+`invoice_event_records` rows for exactly one proforma and one final invoice,
+checks internal invoice list/document endpoints, verifies the final payment
+snapshot through Payments read-only status evidence with `providerCall=false`,
+and optionally checks customer account and Logging evidence when
+`CUSTOMER_BEARER_TOKEN` or `LOGGING_ADMIN_BEARER_TOKEN` are supplied. Download
+link rotation is a durable token-state mutation, so it is skipped unless
+`VERIFY_DOWNLOAD_LINK_ROTATION=true` and `FINAL_SMOKE_APPROVED=true` are both
+set.
+
 ### Case 1: Order Created Creates Proforma
 
 Allowed only after approval to create the synthetic order.
@@ -432,7 +452,7 @@ Expected result:
 | Runtime provisioning | partially-complete | platform/secrets owner | Vault, DB, scaling, invoices deployment, guarded consumer switch | `verify:runtime-prereqs` passes; invoices is deployed; final smoke still waits on legal/consumer gates |
 | Notifications delivery | complete-for-no-send | notifications owner | token projection, channel row | `invoices.documents` policy and no-send validation pass |
 | Orders/Payments fixture | dependency-gated | orchestrator | approved synthetic order/payment | Provide `ORDER_ID`, `PAYMENT_APPLICATION_ID` |
-| Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order |
+| Final execution | final integration | orchestrator | all gates closed | Execute cases 0-5 in order and run `npm run verify:final-smoke-evidence` |
 
 Merge/order of operations:
 1. Runtime provisioning closes Vault, DB, and scaled dependency gates.
@@ -440,8 +460,7 @@ Merge/order of operations:
 3. Orchestrator runs `npm run verify:final-smoke-prereqs` and closes its gates.
 4. Orchestrator approves invoices deployment and consumer enable.
 5. Orchestrator creates the synthetic fixture and runs the final smoke.
-6. Validation owner captures API, DB, and logging evidence without secrets or raw
-   customer data.
+6. Validation owner runs `ORDER_ID=<ORDER_ID> PAYMENT_APPLICATION_ID=<PAYMENT_APPLICATION_ID> npm run verify:final-smoke-evidence` and captures API, DB, Payments, and optional account/logging evidence without secrets or raw customer data.
 
 ## Open Blockers
 

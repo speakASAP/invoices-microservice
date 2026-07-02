@@ -13,6 +13,7 @@
     "verify:runtime-readiness": "node scripts/verify-runtime-readiness.js",
     "verify:runtime-prereqs": "bash scripts/check-runtime-prereqs.sh",
     "verify:final-smoke-prereqs": "bash scripts/check-final-smoke-prereqs.sh",
+    "verify:final-smoke-evidence": "bash scripts/check-final-smoke-evidence.sh",
     "verify:consumer-enable-prereqs": "ALLOW_CONSUMER_DISABLED=true bash scripts/check-final-smoke-prereqs.sh",
     "verify:seller-legal-source": "VERIFY_ONLY=true bash scripts/sync-seller-legal-secret.sh",
     "runtime:sync-seller-legal": "bash scripts/sync-seller-legal-secret.sh",

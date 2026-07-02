@@ -546,6 +546,57 @@ The sync command was not executed because
 external action is to create that Vault path with approved seller legal data.
 
 
+## 2026-07-02 - Final Smoke Evidence Verifier
+
+Added a read-only-by-default verifier for the approved synthetic final-smoke
+fixture:
+
+- `npm run verify:final-smoke-evidence` requires `ORDER_ID` and runs
+  `npm run verify:final-smoke-prereqs` by default before evidence capture.
+- It verifies exactly one proforma and one final invoice row for the order,
+  processed created/paid event records, generated HTML/PDF snapshots, PDF
+  hashes, download token hashes, unblocked status, final payment reference, and
+  stored final `paymentSnapshot.providerCall=false`.
+- It checks internal invoice list and document endpoints without printing
+  document bodies, PDF bytes, token hashes, or raw order snapshots.
+- It checks Payments read-only
+  `/payments/status/by-order-id?applicationId=<PAYMENT_APPLICATION_ID>&orderId=<ORDER_ID>`
+  evidence with `providerCall=false`, `mutation=false`, and
+  `persistence=false`.
+- Customer account and Logging checks are optional and require
+  `CUSTOMER_BEARER_TOKEN` or `LOGGING_ADMIN_BEARER_TOKEN`.
+- Download-link rotation is skipped unless
+  `VERIFY_DOWNLOAD_LINK_ROTATION=true FINAL_SMOKE_APPROVED=true`, because that
+  path mutates durable token state.
+
+The verifier was not run against a live fixture because
+`secret/prod/invoices-microservice-seller` and
+`ORDERS_EVENTS_CONSUMER_ENABLED=true` are still missing.
+
+
+## 2026-07-02 - Notifications Runtime Drift Repaired
+
+Validation after adding the final-smoke evidence verifier found that the live
+Notifications deployment had drifted to image
+`localhost:5000/notifications-microservice:583da28`. That image did not include
+the `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` static service actor, so
+`./scripts/check-invoices-documents-readiness.sh` returned HTTP 401.
+
+Redeployed and pinned `notifications-microservice` to immutable image
+`localhost:5000/notifications-microservice:f855764`. Rollout and in-pod health
+passed, and
+`./scripts/check-invoices-documents-readiness.sh` now passes again:
+proforma and final validation both return HTTP 201 with `mutation=false` and
+`providerCall=false`.
+
+Current invoices pre-consumer gate:
+
+- `npm run verify:consumer-enable-prereqs`: fails only on
+  `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
+- `ORDERS_EVENTS_CONSUMER_ENABLED` remains disabled intentionally until seller
+  legal data exists and the guarded enable script is allowed to run.
+
+
 ## 2026-07-02 - Logging Contract Hardening
 
 Added test-covered source evidence for the Logging integration:

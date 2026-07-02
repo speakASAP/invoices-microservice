@@ -207,6 +207,29 @@ checks pass, force-syncs it, and reruns the pre-consumer final-smoke gate. The
 runtime sync was not executed because the seller legal Vault path is still
 `[MISSING]`.
 
+2026-07-02 continuation: Added a guarded final-smoke evidence verifier for the
+approved synthetic fixture lane. `npm run verify:final-smoke-evidence` requires
+`ORDER_ID`, runs `verify:final-smoke-prereqs` by default, then captures
+sanitized evidence from `invoice_documents`, `invoice_event_records`, internal
+invoice list/document endpoints, and the Payments read-only
+`/payments/status/by-order-id` snapshot. Customer account and Logging evidence
+are optional and require approved bearer tokens. Download-link rotation is not
+part of the default read-only path; it requires
+`VERIFY_DOWNLOAD_LINK_ROTATION=true` and `FINAL_SMOKE_APPROVED=true`. The
+verifier was not run against a fixture because seller legal data and the
+RabbitMQ consumer switch are still `[MISSING]`.
+
+2026-07-02 continuation: During validation, Notifications had drifted to image
+`localhost:5000/notifications-microservice:583da28`, which lacked invoices
+service-token support and caused no-send invoice validation to return 401.
+Redeployed and pinned `notifications-microservice` to immutable image
+`localhost:5000/notifications-microservice:f855764`; rollout and health passed,
+and `./scripts/check-invoices-documents-readiness.sh` again returns HTTP 201
+for proforma and final with `mutation=false` and `providerCall=false`.
+`npm run verify:consumer-enable-prereqs` now fails only on
+`[MISSING: seller legal secret invoices-microservice-seller-secret]` while the
+Orders consumer remains intentionally disabled.
+
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
 consumer enablement, seller legal secret, Payments `payments:read` scope for

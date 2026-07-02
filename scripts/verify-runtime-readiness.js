@@ -23,6 +23,7 @@ const packageJson = read('package.json');
 const consumerEnableScript = read('scripts/enable-orders-consumer-for-final-smoke.sh');
 const sellerSyncScript = read('scripts/sync-seller-legal-secret.sh');
 const sellerExternalSecret = read('k8s/seller-external-secret.yaml');
+const finalSmokeEvidenceScript = read('scripts/check-final-smoke-evidence.sh');
 
 assert(dbModule.includes('ensureDatabaseExistsFromEnv'), 'database module does not run DB bootstrap gate');
 assert(dbBootstrap.includes("env.DB_AUTO_CREATE !== 'true'"), 'DB bootstrap is not opt-in');
@@ -38,6 +39,7 @@ assert(deployment.includes('invoices-microservice-seller-secret') && deployment.
 assert(!externalSecret.includes('INVOICE_SELLER_NAME'), 'runtime ExternalSecret must not require seller legal data for service startup');
 assert(!runtimePrereqs.includes('INVOICE_SELLER_NAME'), 'runtime prereq gate must not require seller legal data for service startup');
 assert(packageJson.includes('verify:final-smoke-prereqs'), 'final smoke prereq verifier script is not registered');
+assert(packageJson.includes('verify:final-smoke-evidence'), 'final smoke evidence verifier script is not registered');
 assert(packageJson.includes('verify:consumer-enable-prereqs'), 'consumer enable preflight script is not registered');
 assert(packageJson.includes('verify:seller-legal-source'), 'seller legal source verifier script is not registered');
 assert(packageJson.includes('runtime:sync-seller-legal'), 'seller legal sync runtime script is not registered');
@@ -49,6 +51,15 @@ assert(finalSmokePrereqs.includes('ALLOW_CONSUMER_DISABLED'), 'final smoke verif
 assert(finalSmokePrereqs.includes('INVOICE_SELLER_NAME'), 'final smoke verifier must check seller legal data');
 assert(finalSmokePrereqs.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'final smoke verifier must check Orders consumer enablement');
 assert(finalSmokePrereqs.includes('INVOICES_NOTIFICATIONS_SERVICE_TOKEN'), 'final smoke verifier must check Notifications token projection');
+assert(finalSmokeEvidenceScript.includes('ORDER_ID'), 'final smoke evidence verifier must require ORDER_ID');
+assert(finalSmokeEvidenceScript.includes('SKIP_FINAL_SMOKE_PREREQS'), 'final smoke evidence verifier must run strict prereqs by default with an explicit skip escape hatch');
+assert(finalSmokeEvidenceScript.includes('invoice_documents') && finalSmokeEvidenceScript.includes('invoice_event_records'), 'final smoke evidence verifier must inspect invoice DB evidence');
+assert(finalSmokeEvidenceScript.includes('paymentSnapshot') && finalSmokeEvidenceScript.includes('providerCall'), 'final smoke evidence verifier must inspect payment snapshot evidence');
+assert(finalSmokeEvidenceScript.includes('payments/status/by-order-id') && finalSmokeEvidenceScript.includes('mutation=false'), 'final smoke evidence verifier must inspect Payments read-only snapshot API');
+assert(finalSmokeEvidenceScript.includes('document.pdf') && finalSmokeEvidenceScript.includes('%PDF'), 'final smoke evidence verifier must fetch internal PDF documents');
+assert(finalSmokeEvidenceScript.includes('CUSTOMER_BEARER_TOKEN'), 'final smoke evidence verifier must support optional customer account evidence');
+assert(finalSmokeEvidenceScript.includes('LOGGING_ADMIN_BEARER_TOKEN'), 'final smoke evidence verifier must support optional Logging evidence');
+assert(finalSmokeEvidenceScript.includes('VERIFY_DOWNLOAD_LINK_ROTATION') && finalSmokeEvidenceScript.includes('FINAL_SMOKE_APPROVED'), 'final smoke evidence verifier must guard token-rotation mutations');
 assert(dockerfile.includes('dist/src/main.js'), 'Docker image must start the built Nest entrypoint at dist/src/main.js');
 assert(consumerEnableScript.includes('ALLOW_CONSUMER_DISABLED=true'), 'consumer enable script must prove prereqs before enabling the consumer');
 assert(consumerEnableScript.includes('kubectl patch configmap') && consumerEnableScript.includes('ORDERS_EVENTS_CONSUMER_ENABLED'), 'consumer enable script must patch the consumer switch explicitly');
