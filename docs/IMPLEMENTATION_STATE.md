@@ -75,6 +75,15 @@ Notifications `POST /notifications/send` with `channelKey=invoices.documents`;
 customer account invoice listing/download remains dependency-gated and should
 be handled as a separate account-access lane.
 
+2026-07-02 continuation: Added source-level account invoice access in
+`invoices-microservice`. `GET /invoices/account` and
+`POST /invoices/account/:invoiceId/download-link` validate customer bearer
+tokens through Auth `POST /auth/validate`, then scope by normalized
+`orderSnapshot.customer.email`. Responses omit raw snapshots, document HTML,
+token hashes, customer addresses, and internal event fields. This is an
+email-scoped interim contract because stable Auth subject-to-order matching is
+still `[MISSING]`.
+
 ## Preserved Intent
 
 Orders remains canonical order truth and event producer. Payments remains

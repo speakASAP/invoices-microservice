@@ -28,7 +28,8 @@ Status: dependency-gated
 
 - [ ] Integrate with Auth/customer account after Auth invoice-profile/address
       wallet APIs exist.
-- [ ] Provide account-scoped invoice listing/download.
+- [x] Provide source-level account-scoped invoice listing/download by Auth
+      validated customer email.
 
 ## Goal 4: Corrections And Credit Notes
 

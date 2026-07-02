@@ -146,3 +146,23 @@ Additional blockers:
 - `[MISSING: customer account invoice listing/download API]`
 - `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
+
+## 2026-07-02 - Account Invoice Access Source Lane
+
+Added source-level customer account access inside `invoices-microservice`:
+
+- `GET /invoices/account` validates the bearer token through Auth
+  `POST /auth/validate` and lists only invoices whose stored Orders snapshot
+  has `customer.email` matching the normalized Auth email.
+- `POST /invoices/account/:invoiceId/download-link` validates the same Auth
+  customer scope and rotates an opaque public document token without exposing
+  `downloadTokenHash`.
+- Account responses are intentionally smaller than internal invoice responses:
+  no raw order snapshot, payment snapshot, source event ids, token hashes,
+  document HTML, customer address, or blocked internals are returned.
+
+The lane remains source-only until runtime blockers close. It scopes by email
+because `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
+is still open.
+
+Validation pending:

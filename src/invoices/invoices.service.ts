@@ -91,6 +91,35 @@ export class InvoicesService {
     });
   }
 
+  async findByCustomerEmail(email: string): Promise<InvoiceDocument[]> {
+    const normalizedEmail = this.normalizeEmail(email);
+    if (!normalizedEmail) return [];
+
+    return this.invoiceRepository.createQueryBuilder('invoice')
+      .where('LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email', { email: normalizedEmail })
+      .orderBy('invoice.createdAt', 'ASC')
+      .getMany();
+  }
+
+  async createCustomerDownloadLink(invoiceId: string, email: string): Promise<string | null> {
+    const normalizedEmail = this.normalizeEmail(email);
+    if (!normalizedEmail) return null;
+
+    const invoice = await this.invoiceRepository.createQueryBuilder('invoice')
+      .where('invoice.id = :invoiceId', { invoiceId })
+      .andWhere('LOWER("invoice"."orderSnapshot" #>> \'{customer,email}\') = :email', { email: normalizedEmail })
+      .getOne();
+
+    if (!invoice?.documentHtml) {
+      return null;
+    }
+
+    const token = this.generateDownloadToken();
+    invoice.downloadTokenHash = this.hashToken(token);
+    await this.invoiceRepository.save(invoice);
+    return this.buildDownloadUrl(invoice.id, token) || null;
+  }
+
   async getDocumentHtml(invoiceId: string, token: string): Promise<string | null> {
     const invoice = await this.invoiceRepository.findOne({ where: { id: invoiceId } });
     if (!invoice?.documentHtml || !invoice.downloadTokenHash || !this.verifyToken(token, invoice.downloadTokenHash)) {
@@ -309,6 +338,11 @@ export class InvoicesService {
     const numeric = Number(value);
     if (!Number.isFinite(numeric)) return null;
     return numeric.toFixed(2);
+  }
+
+  private normalizeEmail(value: string): string | null {
+    const normalized = value.trim().toLowerCase();
+    return normalized.includes('@') ? normalized : null;
   }
 
   private generateDownloadToken(): string {

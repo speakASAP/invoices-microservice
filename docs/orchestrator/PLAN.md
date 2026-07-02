@@ -19,7 +19,7 @@ provider, or address payloads for invoice generation.
 | Payments | Updates Orders on payment completion; optional DB snapshot read by order id. |
 | Notifications | Sends invoice-ready messages when configured. |
 | Logging | Receives sanitized operational logs. |
-| Auth | Future customer-account invoice access and reusable invoice profiles. |
+| Auth | Validates customer bearer tokens for account-scoped invoice listing/download; reusable invoice profiles remain future input. |
 
 ## Parallel Execution
 
@@ -29,5 +29,6 @@ provider, or address payloads for invoice generation.
 | B Orders read role | ready_parallel | Orders integration owner | add invoices service actor/read role without touching event payloads | Orders build + focused auth/read smoke |
 | C runtime platform | dependency-gated | platform/secrets owner | DB, Vault, K8s manifests, ingress | dry-run + rollout after approval |
 | D delivery/PDF | dependency-gated | invoices/notifications owner | PDF/storage + Notifications delivery | focused delivery validation |
+| E account access | active | invoices account owner | Auth-validated customer invoice list and download-link rotation | focused account tests + contract verifier |
 
 Shared contract owner: main coordinator. Merge order: A -> B -> C -> D.

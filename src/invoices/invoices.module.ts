@@ -13,6 +13,7 @@ import { NotificationsClientService } from './notifications-client.service';
 import { InvoiceTemplateService } from './invoice-template.service';
 import { InternalAuthGuard } from '../common/internal-auth.guard';
 import { LoggerService } from '../common/logger.service';
+import { CustomerAuthGuard } from '../common/customer-auth.guard';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LoggerService } from '../common/logger.service';
     NotificationsClientService,
     InvoiceTemplateService,
     InternalAuthGuard,
+    CustomerAuthGuard,
     LoggerService,
   ],
   exports: [InvoicesService],
