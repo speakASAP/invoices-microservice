@@ -165,4 +165,5 @@ The lane remains source-only until runtime blockers close. It scopes by email
 because `[MISSING: Auth customer subject-to-order identity contract for non-email order matching]`
 is still open.
 
-Validation pending:
+Validation pending: account access tests, build, contract verifier, runtime
+readiness verifier.

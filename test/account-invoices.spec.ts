@@ -17,15 +17,15 @@ function makeQueryBuilder(result: unknown) {
 
 function makeService(repository: any): InvoicesService {
   return new InvoicesService(
-    repository,
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
-  } as any);
+    repository as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    {} as any,
+    { log: jest.fn(), warn: jest.fn(), error: jest.fn() } as any,
+  );
 }
 
 describe('account invoice access', () => {
