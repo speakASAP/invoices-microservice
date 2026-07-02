@@ -27,9 +27,10 @@ provider, or address payloads for invoice generation.
 | --- | --- | --- | --- | --- |
 | A service core | source-ready | invoices worker | `src/invoices`, DB entities, HTML documents | `npm run build`, `npm test`, `npm run verify:contracts` |
 | B Orders read role | source-ready-runtime-gated | Orders integration owner | invoices service actor/read role without event payload expansion | Orders source evidence plus runtime token projection |
-| C runtime provisioning | active_parallel | platform/secrets owner | Vault path, invoices DB, dependency replicas, deploy preflight | `npm run verify:runtime-prereqs` after provisioning |
-| D Notifications delivery policy | active_parallel | notifications owner | invoices service actor plus `invoices.documents` channel policy; no provider send | validate endpoint/source tests; no-send evidence |
+| C runtime provisioning | active_parallel | platform/secrets owner | Vault path, invoices DB, deploy preflight; dependency workloads currently ready | `npm run verify:runtime-prereqs` after provisioning |
+| D Notifications delivery policy | source-ready-runtime-gated | notifications owner | invoices service actor plus `invoices.documents` channel policy; no provider send | commit `676b662`, validate endpoint/source tests, no-send readiness script |
+| G final smoke runbook | dependency-gated | integration owner | order-created proforma, payment-completed final, account access, logging evidence | `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md`; run only after runtime prereqs pass |
 | E account access | source-ready-runtime-gated | invoices account owner | Auth-validated customer invoice list and download-link rotation | focused account tests + contract verifier |
 | F PDF/durable storage | dependency-gated | invoices/storage owner | immutable PDF object references and tax-document attachment policy | storage contract + focused PDF validation |
 
-Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications channel policy -> final smoke -> deploy.
+Shared contract owner: main coordinator. Merge order: source contracts -> runtime provisioning -> Notifications runtime channel policy -> final smoke -> deploy.

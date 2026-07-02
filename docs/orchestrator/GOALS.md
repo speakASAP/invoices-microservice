@@ -10,7 +10,8 @@ Status: active
 - [x] Add proforma/final issuance flow with blocked-record behavior.
 - [x] Add HTML document rendering and tokenized download endpoint.
 - [x] Validate build/tests on remote.
-- [ ] Resolve runtime DB/Vault/dependency readiness blockers.
+- [ ] Resolve runtime DB/Vault blockers and delivery policy gates.
+- [x] Add dependency-gated final runtime smoke plan.
 - [ ] Deploy only after runtime blockers are closed.
 
 ## Goal 2: PDF And Durable Storage

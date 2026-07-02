@@ -255,3 +255,30 @@ Parallel lanes now active:
 
 Next action: integrate lane outputs, then rerun `npm run verify:runtime-prereqs`
 before any deploy attempt.
+
+## 2026-07-02 - Lane Integration And Runtime Prereq Recheck
+
+Integrated the parallel lane outputs into the durable orchestration state:
+
+- Notifications delivery contract lane completed remote commit
+  `676b662 test: define invoices notification readiness contract` on top of
+  `8a6b7ed feat: allow invoices notifications service actor`.
+- Final smoke lane added
+  `docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` as a dependency-gated,
+  non-mutating runbook.
+- Current live runtime prerequisite check fails closed only on:
+  - `[MISSING: Vault path secret/prod/invoices-microservice]`
+  - `[MISSING: database invoices]`
+- Orders, Payments, Notifications, Logging, and RabbitMQ are all ready `1/1`.
+
+Validation:
+
+- `npm run verify:runtime-prereqs`: failed as expected with only the two
+  runtime provisioning blockers above and no secret values printed.
+- `npm run verify:contracts`: passed.
+- `npm run verify:runtime-readiness`: passed.
+- Notifications lane validation passed: readiness-script syntax, focused Jest,
+  `npm run build`, full Jest, and `git diff --check`.
+
+Next action: provision the invoices Vault path and `invoices` database, then
+rerun `npm run verify:runtime-prereqs` before deployment or final smoke.

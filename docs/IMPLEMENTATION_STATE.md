@@ -8,11 +8,10 @@ created: 2026-07-02
 last_updated: 2026-07-02
 completeness_level: source-ready-runtime-gated
 current_goal: Goal 1 Invoices Issuance MVP
-current_chunk: Runtime integration gating and parallel rollout lanes
+current_chunk: Runtime provisioning, notification contract, and final smoke gating
 blockers:
   - [MISSING: Vault path secret/prod/invoices-microservice with core runtime key names]
   - [MISSING: invoices database provisioning or owner-approved DB_AUTO_CREATE=true first deploy]
-  - [MISSING: Orders, Payments, and Notifications desired replicas > 0 for runtime smoke]
   - [MISSING: Payments API key value registered in Payments API_KEYS with payments:read scope]
   - [MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]
   - [MISSING: seller legal identity and VAT configuration before legal issuance]
@@ -87,10 +86,9 @@ email-scoped interim contract because stable Auth subject-to-order matching is
 still `[MISSING]`.
 
 2026-07-02 continuation: Tightened the live runtime preflight so required
-Deployments and StatefulSets must have desired replicas greater than zero. The
-current live blocker set is now explicit: missing Vault path, missing
-`invoices` database, and Orders/Payments/Notifications scaled to zero; Logging
-and RabbitMQ are ready.
+Deployments and StatefulSets must have desired replicas greater than zero. That
+historical run showed missing Vault path, missing `invoices` database, and
+dependency replica blockers, while Logging and RabbitMQ were ready.
 
 2026-07-02 continuation: Split runtime startup prerequisites from seller legal
 issuance prerequisites. The core ExternalSecret no longer requires
@@ -105,13 +103,25 @@ invoices-microservice` with `INVOICES_INTERNAL_SERVICE_TOKEN`/
 `INVOICES_ORDERS_SERVICE_TOKEN` for the order read boundary. Payments source
 exposes `GET /payments/status/by-order-id` behind `X-API-Key` with the
 `payments:read` scope; the runtime value must exist in both invoices Vault
-configuration and Payments `API_KEYS`/`PAYMENT_API_KEY_SCOPES`. Notifications
-source commit `8a6b7ed feat: allow invoices notifications service actor`
+configuration and Payments `API_KEYS`/`PAYMENT_API_KEY_SCOPES`.
+Notifications source readiness is now at
+`676b662 test: define invoices notification readiness contract` on top of
+`8a6b7ed feat: allow invoices notifications service actor`. The identity change
 accepts `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` as an `invoices-microservice`
 machine actor and projects it from
-`secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN`; deployment is
-still gated until that Vault key exists and `invoices.documents` channel policy
-is configured.
+`secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN`; the readiness
+contract defines the no-send `invoices.documents` validation path. Deployment
+is still gated until that Vault key exists and `invoices.documents` channel
+policy is configured.
+
+2026-07-02 continuation: Fresh runtime-prereq recheck shows dependency
+workloads are now ready. `npm run verify:runtime-prereqs` fails only on
+`[MISSING: Vault path secret/prod/invoices-microservice]` and
+`[MISSING: database invoices]`; Orders, Payments, Notifications, Logging, and
+RabbitMQ all report ready `1/1`. Added
+`docs/orchestrator/FINAL_RUNTIME_SMOKE_PLAN.md` as the dependency-gated final
+smoke runbook for proforma issuance, final tax invoice issuance, account
+access, and logging evidence.
 
 ## Preserved Intent
 
