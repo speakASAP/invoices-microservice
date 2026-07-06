@@ -1,16 +1,14 @@
 {
   "v": 1,
   "project": "invoices-microservice",
-  "stage": "source-scaffold",
-  "health": "not-deployed",
+  "stage": "production",
+  "health": "ok",
   "current_goal": "Goal 1 invoices issuance MVP",
-  "next_focus": "Validate source, then resolve runtime config and Orders internal read contract.",
+  "next_focus": "Goal 1 is runtime-complete. Future work is limited to owner-gated durable storage/corrections and dependency-gated authenticated Orders authSubject proof.",
   "blockers": [
-    "[MISSING: production DB secret and database provisioning for invoices]",
-    "[MISSING: Orders internal service token and Orders allowlist entry for invoices-microservice reads]",
-    "[MISSING: seller legal identity and VAT configuration]",
-    "[MISSING: Notifications service token/channel policy for invoice delivery]",
-    "[MISSING: PDF attachment/storage contract]"
+    "[MISSING: owner-approved runtime MinIO/S3 document storage rollout, migration application, and backfill plan]",
+    "[MISSING: deployed authenticated checkout/runtime proof that new Orders snapshots persist customer.authSubject across active channels]",
+    "[MISSING: owner-approved refund/correction workflow and credit-note policy]"
   ],
-  "updated_at": "2026-07-02"
+  "updated_at": "2026-07-06"
 }

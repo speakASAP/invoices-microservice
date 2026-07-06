@@ -2,10 +2,10 @@
 
 ```yaml
 id: EP-INVOICES-GOAL-1
-status: in-progress
+status: complete
 owner: Invoices coordinator
 created: 2026-07-02
-last_updated: 2026-07-02
+last_updated: 2026-07-06
 parallelization_strategy: parallel_goals
 contract_schema_impact: creates
 replay_determinism_impact: required
@@ -35,7 +35,7 @@ final tax invoice without duplicating Orders or Payments ownership.
 - No refunds, credit notes, corrections, or cancellation documents.
 - No real payment creation or provider calls.
 - No real notification send during source validation.
-- No production deployment until blockers are resolved.
+- No refunds, credit notes, or destructive correction flows inside Goal 1.
 
 ## Parallel Execution Strategy
 
@@ -57,9 +57,10 @@ final tax invoice without duplicating Orders or Payments ownership.
 - `npm run verify:runtime-readiness`
 - `git diff --check`
 - `npm run verify:runtime-prereqs` after runtime provisioning
-- `npm run verify:final-smoke-prereqs` after deploy/delivery/legal gates
+- `npm run verify:consumer-enable-prereqs`
+- `npm run verify:seller-legal-source`
+- `npm run verify:final-smoke-evidence` with documented synthetic fixtures
 
 ## Gate Decision
 
-Pre-coding gate: pass with documented runtime blockers. Source-only
-implementation is allowed; deployment is blocked.
+Execution complete. Goal 1 is deployed and live runtime/final-smoke evidence passed on Alfares; remaining work is future owner-gated or dependency-gated outside this execution plan.

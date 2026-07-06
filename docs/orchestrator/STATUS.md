@@ -1,5 +1,38 @@
 # Invoices Orchestrator Status
 
+## 2026-07-06 - Goal 1 Runtime Complete And Final Smoke Verified
+
+Status: deployed and runtime-complete for Goal 1 on Alfares; no code changes were required in this pass, only state reconciliation after live verification.
+
+IPS chain:
+
+- Vision: every eligible order can issue a proforma and final invoice through a dedicated invoices service without expanding Orders event payloads or leaking document internals.
+- Goal Impact: the live invoices runtime now matches the planned Goal 1 boundary, and future work can stay limited to explicit owner-gated or dependency-gated lanes instead of pretending the MVP is still blocked.
+- System: `invoices-microservice` runtime, live Kubernetes deployment, Vault/DB/runtime gates, and final-smoke verifiers.
+- Feature: Goal 1 deployment and runtime evidence closure.
+- Task: rerun the live non-secret gate set and final-smoke evidence against documented synthetic fixtures, then reconcile repo state/docs to the verified runtime truth.
+- Execution Plan: read-only verification first, then docs/state-only closeout; no deploy, DB mutation, or token-rotation mutation in this pass.
+- Coding Prompt: preserve the existing deployed runtime, do not invent new runtime blockers, and do not mutate customer/download token state just to satisfy optional evidence.
+- Code: `STATE.json`, `TASKS.md`, `docs/IMPLEMENTATION_STATE.md`, `docs/orchestrator/GOALS.md`, `docs/orchestrator/PLAN.md`, and `docs/orchestrator/EXECUTION_PLAN.md`.
+- Validation: `npm run build`, `npm test`, `npm run verify:runtime-prereqs`, `npm run verify:consumer-enable-prereqs`, `npm run verify:seller-legal-source`, `npm run verify:final-smoke-evidence` for the `statex` fixture, `npm run verify:final-smoke-evidence` for the `cliplot` fixture, and `git diff --check` all passed on `alfares`.
+
+Evidence:
+
+- `npm run build` passed.
+- `npm test` passed: 8 suites / 21 tests.
+- `npm run verify:runtime-prereqs` passed with live Vault path/key checks, existing `invoices` database, and Orders/Payments/Notifications/Logging/RabbitMQ all ready.
+- `npm run verify:consumer-enable-prereqs` passed with deployed `invoices-microservice`, HTTPS public base URL, RabbitMQ consumer enabled, seller legal secret present, Payments read scope registered, Notifications token projection present, and `invoices.documents` no-send validation returning HTTP 201 for both proforma and final validation.
+- `npm run verify:seller-legal-source` passed in verify-only mode against `secret/prod/invoices-microservice-seller` without printing secret values.
+- `npm run verify:final-smoke-evidence` passed for `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex` and `ORDER_ID=0a3e7eb8-244f-420b-bce7-67fe8f3d18f1 PAYMENT_APPLICATION_ID=cliplot`. Each run verified exactly one proforma and one final invoice row, processed created/paid event records, HTML/PDF document availability, guarded internal document reads, and Payments status evidence with `providerCall=false`, `mutation=false`, and `persistence=false`.
+- Optional customer account bearer-token evidence and Logging admin evidence remain intentionally unrun because those checks require extra bearer tokens, and download-link rotation remains intentionally skipped because it mutates token state. Goal 1 does not require those optional checks to remain truthful.
+
+Boundary:
+
+- No deploy, rollout, database mutation, RabbitMQ replay, customer account token generation, download-link rotation, provider send, or secret value disclosure was performed in this pass.
+- Remaining repo work is limited to owner-gated durable storage/corrections or dependency-gated authenticated `customer.authSubject` runtime proof.
+
+Next action: no further Goal 1 implementation work is required. The next valid lanes are owner-gated Goal 2 durable storage, dependency-gated Goal 3 authenticated auth-subject proof, or owner-gated Goal 4 corrections/credit notes.
+
 ## 2026-07-02 - Initial Service Scaffold
 
 Created the source plan for a standalone invoices service. Key decisions:

@@ -2,21 +2,22 @@
 
 ```yaml
 id: INVOICES-IMPLEMENTATION-STATE
-status: active
+status: owner-gated
 owner: Invoices owner
 created: 2026-07-02
-last_updated: 2026-07-02
-completeness_level: source-ready-runtime-gated
+last_updated: 2026-07-06
+completeness_level: goal-1-runtime-complete-future-lanes-gated
 current_goal: Goal 1 Invoices Issuance MVP
-current_chunk: Final-smoke prerequisite verification and runtime provisioning
+current_chunk: Goal 1 runtime deployed and final smoke evidence verified
 blockers:
-  - [MISSING: approved synthetic fixture executor and fixture data for final invoices smoke]
-  - [MISSING: owner-approved FlipFlop auth-subject create/read smoke proving persisted customer.authSubject]
-  - [MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]
-  - [MISSING: runtime MinIO/S3 invoice document storage provisioning and implementation for off-database immutable tax documents]
+  - [MISSING: owner-approved runtime MinIO/S3 document storage rollout, migration application, and backfill plan]
+  - [MISSING: deployed authenticated checkout/runtime proof that new Orders snapshots persist customer.authSubject across active channels]
+  - [MISSING: owner-approved refund/correction workflow and credit-note policy]
 ```
 
 ## Current Checkpoint
+
+2026-07-06: Goal 1 is runtime-complete on the live Alfares deployment. `invoices-microservice` is deployed, healthy, and the non-secret runtime gates plus final-smoke evidence now pass against documented synthetic fixtures. Validation on `alfares`: `npm run build`, `npm test` (8 suites / 21 tests), `npm run verify:runtime-prereqs`, `npm run verify:consumer-enable-prereqs`, `npm run verify:seller-legal-source`, and `npm run verify:final-smoke-evidence` for `ORDER_ID=536931c5-fb50-4130-803c-c676a0444c19 PAYMENT_APPLICATION_ID=statex` and `ORDER_ID=0a3e7eb8-244f-420b-bce7-67fe8f3d18f1 PAYMENT_APPLICATION_ID=cliplot`. The final-smoke verifier confirmed one proforma and one final invoice per fixture order, processed created/paid event records, internal guarded document reads, PDF/HTML artifact availability, and Payments status evidence with `providerCall=false`, `mutation=false`, and `persistence=false`. Optional customer-token account evidence, download-link rotation, and logging-admin evidence were intentionally skipped because those checks either require extra bearer tokens or mutate token state. Remaining repo work is no longer Goal 1 implementation; it is limited to future owner-gated durable storage/corrections and dependency-gated authenticated `customer.authSubject` runtime proof.
 
 2026-07-02: Initial implementation creates the invoices bounded context,
 event-driven trigger contract, database model, annual invoice sequences, HTML
