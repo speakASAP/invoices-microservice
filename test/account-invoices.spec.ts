@@ -1,5 +1,5 @@
 import { of } from 'rxjs';
-import { UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { CustomerAuthGuard } from '../src/common/customer-auth.guard';
 import { InvoiceDocument, InvoiceStatus, InvoiceType } from '../src/invoices/entities/invoice-document.entity';
 import { InvoicesService } from '../src/invoices/invoices.service';
@@ -206,6 +206,148 @@ describe('CustomerAuthGuard', () => {
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(request.customerAuth).toEqual({ id: undefined, subject: 'auth-user-1', email: undefined, roles: ['customer'] });
+  });
+
+  it('rejects marathon-only imported Auth users', async () => {
+    process.env.AUTH_SERVICE_URL = 'http://auth-microservice:3370';
+    const httpService = {
+      post: jest.fn(() => of({
+        data: {
+          valid: true,
+          user: {
+            sub: 'auth-user-1',
+            email: 'person@example.test',
+            roles: ['app:marathon:admin'],
+            source: 'marathon-import',
+            perApplicationPreferences: { marathon: { imported: true } },
+          },
+        },
+      })),
+    };
+    const guard = new CustomerAuthGuard(httpService as any, { warn: jest.fn() } as any);
+    const request: any = {
+      header: jest.fn((name: string) => (name.toLowerCase() === 'authorization' ? 'Bearer customer-token' : undefined)),
+    };
+    const context: any = { switchToHttp: () => ({ getRequest: () => request }) };
+
+    await expect(guard.canActivate(context)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(request.customerAuth).toBeUndefined();
+  });
+
+  it('rejects nested authSources marathon-only Auth users', async () => {
+    process.env.AUTH_SERVICE_URL = 'http://auth-microservice:3370';
+    const httpService = {
+      post: jest.fn(() => of({
+        data: {
+          valid: true,
+          user: {
+            sub: 'auth-user-1',
+            roles: [],
+            perApplicationPreferences: { authSources: { marathon: { source: 'marathon' } } },
+          },
+        },
+      })),
+    };
+    const guard = new CustomerAuthGuard(httpService as any, { warn: jest.fn() } as any);
+    const request: any = {
+      header: jest.fn((name: string) => (name.toLowerCase() === 'authorization' ? 'Bearer customer-token' : undefined)),
+    };
+    const context: any = { switchToHttp: () => ({ getRequest: () => request }) };
+
+    await expect(guard.canActivate(context)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(request.customerAuth).toBeUndefined();
+  });
+
+  it('accepts marathon-linked Auth users with a non-marathon role', async () => {
+    process.env.AUTH_SERVICE_URL = 'http://auth-microservice:3370';
+    const httpService = {
+      post: jest.fn(() => of({
+        data: {
+          valid: true,
+          user: {
+            sub: 'auth-user-1',
+            roles: ['app:marathon:user', 'customer'],
+            source: 'marathon-import',
+            perApplicationPreferences: { marathon: { imported: true } },
+          },
+        },
+      })),
+    };
+    const guard = new CustomerAuthGuard(httpService as any, { warn: jest.fn() } as any);
+    const request: any = {
+      header: jest.fn((name: string) => (name.toLowerCase() === 'authorization' ? 'Bearer customer-token' : undefined)),
+    };
+    const context: any = { switchToHttp: () => ({ getRequest: () => request }) };
+
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+    expect(request.customerAuth).toEqual({
+      id: undefined,
+      subject: 'auth-user-1',
+      email: undefined,
+      roles: ['app:marathon:user', 'customer'],
+    });
+  });
+
+  it('accepts marathon-linked Auth users with a platform admin role', async () => {
+    process.env.AUTH_SERVICE_URL = 'http://auth-microservice:3370';
+    const httpService = {
+      post: jest.fn(() => of({
+        data: {
+          valid: true,
+          user: {
+            sub: 'auth-user-1',
+            roles: ['app:marathon:admin', 'platform:admin'],
+            source: 'marathon-import',
+            perApplicationPreferences: { marathon: { imported: true } },
+          },
+        },
+      })),
+    };
+    const guard = new CustomerAuthGuard(httpService as any, { warn: jest.fn() } as any);
+    const request: any = {
+      header: jest.fn((name: string) => (name.toLowerCase() === 'authorization' ? 'Bearer customer-token' : undefined)),
+    };
+    const context: any = { switchToHttp: () => ({ getRequest: () => request }) };
+
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+    expect(request.customerAuth).toEqual({
+      id: undefined,
+      subject: 'auth-user-1',
+      email: undefined,
+      roles: ['app:marathon:admin', 'platform:admin'],
+    });
+  });
+
+  it('accepts marathon-linked Auth users with non-marathon application preferences', async () => {
+    process.env.AUTH_SERVICE_URL = 'http://auth-microservice:3370';
+    const httpService = {
+      post: jest.fn(() => of({
+        data: {
+          valid: true,
+          user: {
+            sub: 'auth-user-1',
+            roles: ['app:marathon:user'],
+            perApplicationPreferences: {
+              marathon: { imported: true },
+              invoices: { enabled: true },
+            },
+          },
+        },
+      })),
+    };
+    const guard = new CustomerAuthGuard(httpService as any, { warn: jest.fn() } as any);
+    const request: any = {
+      header: jest.fn((name: string) => (name.toLowerCase() === 'authorization' ? 'Bearer customer-token' : undefined)),
+    };
+    const context: any = { switchToHttp: () => ({ getRequest: () => request }) };
+
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+    expect(request.customerAuth).toEqual({
+      id: undefined,
+      subject: 'auth-user-1',
+      email: undefined,
+      roles: ['app:marathon:user'],
+    });
   });
 
   it('rejects requests without bearer tokens', async () => {
