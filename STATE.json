@@ -1,14 +1,29 @@
 {
-  "v": 1,
+  "schemaVersion": 1,
   "project": "invoices-microservice",
-  "stage": "production",
+  "lifecycle": "production",
   "health": "ok",
-  "current_goal": "Goal 1 invoices issuance MVP",
-  "next_focus": "Goal 1 is runtime-complete. Future work is limited to owner-gated durable storage/corrections and dependency-gated authenticated Orders authSubject proof.",
+  "activeTask": "none",
+  "lastUpdated": "2026-08-30",
+  "deployment": {
+    "status": "production",
+    "notes": "Goal 1 invoice issuance MVP is runtime-complete and deployed to statex-apps; commit-triggered auto-deploy applies to future non-documentation changes on main."
+  },
   "blockers": [
-    "[MISSING: owner-approved runtime MinIO/S3 document storage rollout, migration application, and backfill plan]",
-    "[MISSING: deployed authenticated checkout/runtime proof that new Orders snapshots persist customer.authSubject across active channels]",
-    "[MISSING: owner-approved refund/correction workflow and credit-note policy]"
+    "Owner-approved runtime MinIO/S3 document storage rollout, object-reference migration application, and backfill plan is not yet authorized.",
+    "Deployed authenticated checkout/runtime proof that new Orders snapshots persist customer.authSubject across active channels is not yet available.",
+    "Owner-approved refund/correction workflow and credit-note policy does not exist yet."
   ],
-  "updated_at": "2026-07-06"
+  "followUps": [
+    "IPS documentation-adoption baseline (TASK-001-bootstrap-service) completed 2026-08-30.",
+    "Goal 1 is runtime-complete; future work is limited to owner-gated durable storage and corrections plus dependency-gated authenticated Orders authSubject proof.",
+    "Orders event consumer code exists in src/events/rabbitmq-orders.consumer.ts but ORDERS_EVENTS_CONSUMER_ENABLED is currently false in the production ConfigMap."
+  ],
+  "legacy": {
+    "v": 1,
+    "stage": "production",
+    "current_goal": "Goal 1 invoices issuance MVP",
+    "next_focus": "Goal 1 is runtime-complete. Future work is limited to owner-gated durable storage/corrections and dependency-gated authenticated Orders authSubject proof.",
+    "updated_at": "2026-08-30"
+  }
 }

@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "profile": "runtime-service",
+  "project": {
+    "name": "invoices-microservice",
+    "repository": "https://github.com/speakASAP/invoices-microservice.git"
+  },
+  "standard": {
+    "repository": "https://github.com/speakASAP/intent-preservation-system",
+    "revision": "3e36f64c11e31b878fd2fe09267426738b25ae7f"
+  },
+  "artifacts": {
+    "readme": "README.md",
+    "business": "BUSINESS.md",
+    "system": "SYSTEM.md",
+    "agents": "AGENTS.md",
+    "operations": "AGENT_OPERATIONS.md",
+    "claude": "CLAUDE.md",
+    "tasks": "TASKS.md",
+    "state": "STATE.json",
+    "constitution": "docs/00_constitution/CONSTITUTION.md",
+    "vision": "docs/01_vision/VISION.md",
+    "integrationContract": "docs/06_architecture/INTEGRATION_CONTRACT.md",
+    "projectInvariants": "docs/17_governance/PROJECT_INVARIANTS.md",
+    "validationDebt": "docs/orchestrator/VALIDATION_DEBT.md",
+    "bootstrapTask": "docs/11_tasks/TASK-001-bootstrap-service.md",
+    "bootstrapGoalImpact": "docs/22_goal_impact/GOAL-IMPACT-TASK-001.md",
+    "bootstrapExecutionPlan": "docs/21_execution_plans/EP-TASK-001-bootstrap-service.md",
+    "bootstrapValidation": "docs/12_validation/VAL-TASK-001-bootstrap-service.md"
+  },
+  "integrationReview": [
+    {
+      "capability": "auth",
+      "component": "auth-microservice",
+      "decision": "required",
+      "reason": "Customer-account invoice routes are guarded by CustomerAuthGuard, which validates the customer bearer token against auth-microservice; confirmed in src/common/customer-auth.guard.ts and the @UseGuards(CustomerAuthGuard) decorators on /invoices/account routes in src/invoices/invoices.controller.ts.",
+      "contract": "POST /auth/validate token validation for customer-account invoice list and download-link rotation routes",
+      "configuration": "AUTH_SERVICE_URL (with AUTH_INTERNAL_URL fallback), set in k8s/configmap.yaml to the in-cluster auth-microservice address on port 3370",
+      "failureMode": "When auth is unavailable or unconfigured the guard raises an unauthorized error and customer-account routes are rejected; guarded internal routes and opaque-token document downloads keep working.",
+      "validation": "Customer-account routes reject a request without a valid customer bearer token; guard behavior reviewed in src/common/customer-auth.guard.ts."
+    },
+    {
+      "capability": "postgres",
+      "component": "db-server-postgres",
+      "decision": "required",
+      "reason": "The service owns the invoices PostgreSQL database via TypeORM and persists invoice documents, invoice sequence counters and invoice event records there as its durable system of record.",
+      "contract": "Relational data model for invoice documents, annual sequence counters and processed-event idempotency records",
+      "configuration": "DB_HOST=db-server-postgres, DB_PORT=5432, DB_NAME=invoices, DB_USER=invoices, DB_MIGRATIONS_RUN=true in k8s/configmap.yaml with DB_PASSWORD from Vault secret/prod/invoices-microservice",
+      "failureMode": "Issuance fails closed; no invoice record is created and no invoice number is consumed when persistence is unavailable.",
+      "validation": "Migration src/migrations/20260702120000-CreateInvoicesTables.ts applies at startup and issuance/idempotency reads and writes succeed against the invoices database."
+    },
+    {
+      "capability": "redis",
+      "component": "db-server-redis",
+      "decision": "not-applicable",
+      "reason": "No Redis client, dependency or connection configuration exists in package.json, src/, .env.example or k8s/; idempotency and numbering are handled transactionally in PostgreSQL instead of a cache."
+    },
+    {
+      "capability": "logging",
+      "component": "logging-microservice",
+      "decision": "required",
+      "reason": "The service posts sanitized structured logs to logging-microservice via LOGGING_SERVICE_URL in src/common/logger.service.ts; this is a mandatory ecosystem capability for runtime services.",
+      "contract": "POST sanitized structured log payloads to the shared logging-microservice endpoint",
+      "configuration": "LOGGING_SERVICE_URL and LOGGING_SERVICE_API_PATH (default /api/logs), set in k8s/configmap.yaml",
+      "failureMode": "Log delivery failure degrades operational visibility but never blocks invoice issuance or document delivery.",
+      "validation": "Log emission path in src/common/logger.service.ts redacts token, secret, address, email, phone and provider payload keys before sending."
+    },
+    {
+      "capability": "notifications",
+      "component": "notifications-microservice",
+      "decision": "required",
+      "reason": "Invoice-ready delivery is implemented in src/invoices/notifications-client.service.ts, which POSTs to /notifications/send with a bearer token and the invoice download link.",
+      "contract": "POST /notifications/send transactional invoice-ready message carrying the document download URL",
+      "configuration": "NOTIFICATIONS_SERVICE_URL, NOTIFICATIONS_SERVICE_TOKEN from Vault, and INVOICES_NOTIFICATION_CHANNEL_KEY (default invoices.documents)",
+      "failureMode": "A delivery failure is caught, logged in sanitized form and returns false; the invoice stays issued and remains downloadable through its link.",
+      "validation": "Delivery client returns false without a configured base URL, token, recipient or download URL, and the failure path is exercised by the invoice delivery flow."
+    },
+    {
+      "capability": "ai",
+      "component": "ai-microservice",
+      "decision": "not-applicable",
+      "reason": "No AI client, model call, prompt path or AI_SERVICE_URL configuration exists in src/, package.json, .env.example or k8s/; invoice content is derived deterministically from the Orders snapshot."
+    },
+    {
+      "capability": "payments",
+      "component": "payments-microservice",
+      "decision": "required",
+      "reason": "Real payment status enrichment client code exists in src/invoices/payments-client.service.ts, which reads GET /payments/status/by-order-id using PAYMENTS_SERVICE_URL and PAYMENTS_API_KEY.",
+      "contract": "GET /payments/status/by-order-id returning a payment snapshot used to enrich the final tax invoice",
+      "configuration": "PAYMENTS_SERVICE_URL in k8s/configmap.yaml and PAYMENTS_API_KEY from Vault, sent as the X-API-Key header",
+      "failureMode": "The snapshot read returns null and logs a sanitized warning; the final tax invoice is still issued without payment enrichment rather than failing.",
+      "validation": "Enrichment path returns null when base URL, API key or applicationId is missing, confirmed in src/invoices/payments-client.service.ts."
+    },
+    {
+      "capability": "catalog",
+      "component": "catalog-microservice",
+      "decision": "not-applicable",
+      "reason": "Invoice line items are taken from the Orders billing snapshot; no catalog client, CATALOG_SERVICE_URL configuration or product read exists in src/, .env.example or k8s/."
+    },
+    {
+      "capability": "orders",
+      "component": "orders-microservice",
+      "decision": "required",
+      "reason": "This service consumes Orders lifecycle events and reads the authoritative order and billing snapshot from orders-microservice; confirmed in src/invoices/orders-client.service.ts and src/events/rabbitmq-orders.consumer.ts.",
+      "contract": "Authenticated GET /api/orders/:orderId snapshot read, plus consumption of orders.order.created.v1 and orders.order.paid.v1 as issuance triggers",
+      "configuration": "ORDERS_SERVICE_URL in k8s/configmap.yaml and ORDERS_SERVICE_TOKEN from Vault, sent as the x-internal-service-token header with x-service-name: invoices-microservice",
+      "failureMode": "A missing base URL or token raises ORDER_READ_CONFIG_MISSING and an invalid response raises ORDER_READ_INVALID_RESPONSE, so issuance is blocked rather than inventing order, buyer or billing data.",
+      "validation": "Order snapshot read path and its explicit configuration/response error handling in src/invoices/orders-client.service.ts."
+    },
+    {
+      "capability": "warehouse",
+      "component": "warehouse-microservice",
+      "decision": "not-applicable",
+      "reason": "Invoice issuance has no stock, reservation or fulfillment dependency; no warehouse client or WAREHOUSE_SERVICE_URL configuration exists in src/, .env.example or k8s/."
+    },
+    {
+      "capability": "invoices",
+      "component": "invoices-microservice",
+      "decision": "not-applicable",
+      "reason": "This service is the invoices domain itself, not a consumer of another invoices service."
+    },
+    {
+      "capability": "object-storage",
+      "component": "minio-microservice",
+      "decision": "not-applicable",
+      "reason": "No MinIO or S3 client, bucket configuration or upload path exists in src/, package.json or k8s/; rendered documents are persisted in the service database and PDFs are produced on demand with PDFKit. Durable object storage remains a known future item that is not yet authorized by the owner, so it is not a current integration."
+    },
+    {
+      "capability": "event-bus",
+      "component": "RabbitMQ",
+      "decision": "required",
+      "reason": "The service consumes orders.order.created.v1 and orders.order.paid.v1 from the orders.events topic exchange through the durable queue invoices.orders.lifecycle; the consumer is implemented with amqplib in src/events/rabbitmq-orders.consumer.ts and both routing keys are bound.",
+      "contract": "Consume orders.order.created.v1 and orders.order.paid.v1 from the orders.events topic exchange via the durable queue invoices.orders.lifecycle, with prefetch 1 and per-message ack/nack",
+      "configuration": "RABBITMQ_URL, ORDERS_EVENTS_EXCHANGE=orders.events, INVOICES_ORDERS_QUEUE=invoices.orders.lifecycle and the activation switch ORDERS_EVENTS_CONSUMER_ENABLED, which the production ConfigMap currently sets to false so lifecycle-driven issuance is presently driven through the guarded synthetic ingestion route while owner-gated runtime activation is pending.",
+      "failureMode": "When the consumer is disabled or RABBITMQ_URL is absent the service logs a sanitized warning and starts without consuming; a consume error nacks the message without requeue and the event can be replayed safely because (orderId, invoiceType) is the durable idempotency key.",
+      "validation": "Consumer binding and ack/nack behavior in src/events/rabbitmq-orders.consumer.ts, plus replay through the internally guarded POST /invoices/events/orders route."
+    },
+    {
+      "capability": "docs-rag",
+      "component": "docs-rag-microservice",
+      "decision": "required",
+      "reason": "The service must remain discoverable by the documentation and adoption indexing stack; this is a mandatory capability for runtime-service profiles.",
+      "contract": "Direct Git repository ingestion and repository-scoped retrieval",
+      "configuration": "The project is tracked by the canonical repository registry and the docs-RAG index",
+      "failureMode": "When docs-RAG is unavailable, the repository-local intent and operation documents remain the authoritative source.",
+      "validation": "Project documents resolve to the owning repository path and are discoverable without inventing facts."
+    },
+    {
+      "capability": "monitoring",
+      "component": "monitoring-microservice",
+      "decision": "required",
+      "reason": "Runtime health and rollout readiness must be observable; this is a mandatory capability for runtime-service profiles and is confirmed by the GET /health endpoint in src/health.controller.ts.",
+      "contract": "GET /health returning a service health payload, used by the Kubernetes readiness probe",
+      "configuration": "Health probes defined in k8s/deployment.yaml against port 3204",
+      "failureMode": "An unhealthy service fails readiness, blocks rollout completion and is reported to the owner.",
+      "validation": "GET /health returns a success payload naming invoices-microservice, per src/health.controller.ts."
+    },
+    {
+      "capability": "backups",
+      "component": "backups-microservice",
+      "decision": "required",
+      "reason": "The service persists invoice documents, annual numbering counters and event idempotency records as its durable system of record in PostgreSQL, and legal invoice history requires backup coverage; this is a mandatory posture for runtime services holding tax documents.",
+      "contract": "PostgreSQL backup and retention policy covering the invoices database",
+      "configuration": "Retention and backup schedule managed by database-server for the invoices database",
+      "failureMode": "Loss of issuance history or numbering counters is surfaced and triaged before continued production operation, because numbering cannot be reconstructed safely.",
+      "validation": "Backup posture for the invoices database is defined and reviewed as part of database-server operations."
+    }
+  ]
+}
