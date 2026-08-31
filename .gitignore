@@ -5,3 +5,14 @@ logs/
 .env
 .DS_Store
 npm-debug.log*
+
+# Secret-blocking baseline (required by shared pre-commit hook)
+k8s/secret.yaml
+secrets/
+keys/
+*.pem
+*.key
+*private*
+*backup*
+*bck*
+*.bak*
