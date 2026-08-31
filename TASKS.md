@@ -2,16 +2,13 @@
 
 This file is the concise human-readable work queue. Detailed task contracts live under `docs/11_tasks/`; execution plans and validation reports are linked from those task documents. The pre-existing `docs/IMPLEMENTATION_ORCHESTRATOR.md` and `docs/orchestrator/*` pack continues to track detailed implementation-orchestrator state.
 
-## active
-
+## Active
 - No active tasks. Goal 1 (invoice issuance MVP) is runtime-complete and the IPS adoption baseline is closed.
 
-## ready next
-
+## Ready Next
 - Prepare the durable document storage design so it can start immediately once the owner authorizes MinIO/S3 bucket provisioning, credentials and retention policy.
 
-## blocked
-
+## Blocked
 - Goal 2 durable storage runtime lane: owner approval for MinIO/S3 bucket provisioning, service credentials, retention policy, object-reference migration application, upload/presign runtime and backfill/rollback plan has not been granted.
 - Goal 3 authenticated Orders proof lane: deployed authenticated checkout/runtime evidence that new Orders snapshots persist `customer.authSubject` across active channels is not yet available.
 - Goal 4 corrections lane: the owner-approved refund/correction workflow, credit-note numbering and linkage policy does not exist yet.
