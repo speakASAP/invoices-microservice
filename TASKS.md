@@ -7,11 +7,15 @@ This file is the concise human-readable work queue. Detailed task contracts live
 
 ## Ready Next
 - Prepare the durable document storage design so it can start immediately once the owner authorizes MinIO/S3 bucket provisioning, credentials and retention policy.
+- IPS documentation-adoption baseline (TASK-001-bootstrap-service) completed 2026-08-30.
+- Goal 1 is runtime-complete; future work is limited to owner-gated durable storage and corrections plus dependency-gated authenticated Orders authSubject proof.
+- Orders event consumer code exists in src/events/rabbitmq-orders.consumer.ts but ORDERS_EVENTS_CONSUMER_ENABLED is currently false in the production ConfigMap.
 
 ## Blocked
 - Goal 2 durable storage runtime lane: owner approval for MinIO/S3 bucket provisioning, service credentials, retention policy, object-reference migration application, upload/presign runtime and backfill/rollback plan has not been granted.
 - Goal 3 authenticated Orders proof lane: deployed authenticated checkout/runtime evidence that new Orders snapshots persist `customer.authSubject` across active channels is not yet available.
 - Goal 4 corrections lane: the owner-approved refund/correction workflow, credit-note numbering and linkage policy does not exist yet.
+- Owner-approved runtime MinIO/S3 document storage rollout, object-reference migration application, and backfill plan is not yet authorized.
 
 ## completed
 
