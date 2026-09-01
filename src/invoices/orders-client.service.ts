@@ -24,7 +24,13 @@ export class OrdersClientService {
         this.httpService.get(url, {
           timeout: 10000,
           headers: {
-            'x-internal-service-token': token,
+            // Bearer, not x-internal-service-token. The legacy header let orders
+            // synthesise this caller's role from an unauthenticated x-service-name
+            // value; ORDERS_SERVICE_TOKEN now holds a per-pair RS256 principal
+            // (svc-invoices-microservice--orders-microservice, role
+            // internal:invoices-microservice:service) that orders verifies through
+            // /auth/validate and reads the roles from the token itself.
+            authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
             'x-service-name': 'invoices-microservice',
           },
         }),
