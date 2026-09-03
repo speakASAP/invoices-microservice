@@ -18,7 +18,8 @@
     "verify:seller-legal-source": "VERIFY_ONLY=true bash scripts/sync-seller-legal-secret.sh",
     "runtime:sync-seller-legal": "bash scripts/sync-seller-legal-secret.sh",
     "runtime:enable-orders-consumer": "bash scripts/enable-orders-consumer-for-final-smoke.sh",
-    "runtime:run-final-smoke-fixture": "bash scripts/run-final-smoke-fixture.sh"
+    "runtime:run-final-smoke-fixture": "bash scripts/run-final-smoke-fixture.sh",
+    "verify:credential-self-report": "node scripts/verify-credential-self-report.js"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.1",
@@ -26,6 +27,7 @@
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/schedule": "^4.1.2",
     "@nestjs/typeorm": "^10.0.0",
     "amqplib": "^0.10.3",
     "axios": "^1.6.2",
