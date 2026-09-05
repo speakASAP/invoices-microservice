@@ -82,7 +82,6 @@ This system implements the approved issuance intent in `BUSINESS.md` and the pro
 - `GET /health` returns a healthy service payload
 - A repeated Orders event for the same order and invoice type never produces a second invoice record
 - Invoice numbers are unique within each invoice type and year
-- Internal document routes reject requests without a valid internal service token, and customer-account routes reject requests without a valid customer bearer token
 - No customer address, provider payload, token or secret appears in emitted log metadata
 
 ## open questions

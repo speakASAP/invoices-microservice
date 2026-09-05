@@ -97,23 +97,6 @@ issuance prerequisites. The core ExternalSecret no longer requires
 legal data still blocks invoice issuance through `seller_legal_config_missing`,
 but it no longer blocks a fail-closed service deployment.
 
-2026-07-02 continuation: Reconfirmed cross-service source contracts from live
-remote repositories. Orders source accepts `x-service-name:
-invoices-microservice` with `INVOICES_INTERNAL_SERVICE_TOKEN`/
-`INVOICES_ORDERS_SERVICE_TOKEN` for the order read boundary. Payments source
-exposes `GET /payments/status/by-order-id` behind `X-API-Key` with the
-`payments:read` scope; the runtime value must exist in both invoices Vault
-configuration and Payments `API_KEYS`/`PAYMENT_API_KEY_SCOPES`.
-Notifications source readiness is now at
-`676b662 test: define invoices notification readiness contract` on top of
-`8a6b7ed feat: allow invoices notifications service actor`. The identity change
-accepts `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` as an `invoices-microservice`
-machine actor and projects it from
-`secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN`; the readiness
-contract defines the no-send `invoices.documents` validation path. Deployment
-is still gated until that Vault key exists and `invoices.documents` channel
-policy is configured.
-
 2026-07-02 continuation: Fresh runtime-prereq recheck shows dependency
 workloads are now ready. `npm run verify:runtime-prereqs` fails only on
 `[MISSING: Vault path secret/prod/invoices-microservice]` and

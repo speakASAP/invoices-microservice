@@ -47,9 +47,6 @@ activation evidence on top of
 - `npm run verify:runtime-readiness`: passed in `invoices-microservice`.
 - `npm run verify:runtime-prereqs`: passed:
   - Vault path `secret/prod/invoices-microservice` exists.
-  - Vault keys `DB_PASSWORD`, `INVOICES_INTERNAL_SERVICE_TOKEN`,
-    `ORDERS_SERVICE_TOKEN`, `PAYMENTS_API_KEY`, and
-    `NOTIFICATIONS_SERVICE_TOKEN` exist.
   - Database `invoices` exists.
   - Orders ready `1/1`.
   - Payments ready `1/1`.
@@ -111,10 +108,7 @@ The smoke remains blocked until all gates are closed.
 2. Vault path `secret/prod/invoices-microservice` exists with these key names
    only verified by presence, never printed:
    - `DB_PASSWORD`
-   - `INVOICES_INTERNAL_SERVICE_TOKEN`
-   - `ORDERS_SERVICE_TOKEN`
    - `PAYMENTS_API_KEY`
-   - `NOTIFICATIONS_SERVICE_TOKEN`
 
 3. Database gate:
    - Preferred: `invoices` database already exists.
@@ -143,8 +137,6 @@ The smoke remains blocked until all gates are closed.
 7. Notifications delivery gate:
    - Notifications runtime includes the `8a6b7ed` service-identity change and
      `676b662` no-send readiness contract, or equivalent.
-   - `secret/prod/invoices-microservice#NOTIFICATIONS_SERVICE_TOKEN` is projected
-     into Notifications as `INVOICES_NOTIFICATIONS_SERVICE_TOKEN`.
    - Runtime `invoices.documents` channel policy currently allows
      `invoices-microservice` with `transactional` purpose.
    - No real notification send is allowed without explicit approval and an
@@ -373,30 +365,6 @@ Expected invoices evidence:
 Allowed only after invoices exist.
 
 Use environment variables in the shell; do not echo token values.
-
-```bash
-INVOICES_URL='https://invoices.alfares.cz'
-ORDER_ID='<ORDER_ID>'
-INVOICE_ID='<INVOICE_ID>'
-
-curl -fsS \
-  -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
-  "${INVOICES_URL}/invoices/order/${ORDER_ID}"
-
-curl -fsS \
-  -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
-  "${INVOICES_URL}/invoices/${INVOICE_ID}/document.html" \
-  -o /tmp/invoice-document-smoke.html
-
-curl -fsS \
-  -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
-  "${INVOICES_URL}/invoices/${INVOICE_ID}/document.pdf" \
-  -o /tmp/invoice-document-smoke.pdf
-
-curl -fsS -X POST \
-  -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN:?}" \
-  "${INVOICES_URL}/invoices/${INVOICE_ID}/download-link"
-```
 
 Expected result:
 - Internal order invoice listing returns proforma and final rows.

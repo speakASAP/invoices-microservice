@@ -115,7 +115,6 @@ until object upload, checksum readback, and backfill are verified.
 - Public bucket reads are forbidden.
 - Presigned URLs may be minted only by invoices or a future approved storage
   wrapper for a bounded TTL.
-- Internal service reads require `INVOICES_INTERNAL_SERVICE_TOKEN`.
 - Customer account reads require Auth validation and subject/email scoping.
 - Notifications receives links, not raw PDF bytes, for the current delivery
   path.

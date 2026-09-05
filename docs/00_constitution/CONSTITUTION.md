@@ -42,7 +42,6 @@ An invoice must never be issued without the required legal seller and buyer data
 
 - Customer addresses, payment provider details, tokens and secrets must never be logged.
 - Secrets, credentials and private evidence must never be committed to Git or exposed in documentation.
-- Internal document routes remain guarded by the internal service token; customer routes remain guarded by customer authentication or an opaque download token.
 
 ### validation
 

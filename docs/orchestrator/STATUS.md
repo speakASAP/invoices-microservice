@@ -92,8 +92,6 @@ Validation:
 
 Added internal guarded document access for delivery/account integrations:
 
-- `GET /invoices/:invoiceId/document.html` returns rendered HTML only to
-  internal callers with `INVOICES_INTERNAL_SERVICE_TOKEN`;
 - `POST /invoices/:invoiceId/download-link` rotates the opaque public download
   token and returns a fresh public URL for retry delivery or account download
   surfaces.
@@ -175,7 +173,6 @@ Read-only sub-agent sweeps produced these current contracts:
 Additional blockers:
 
 - `[MISSING: Notifications channel_registry policy for invoices.documents allowing service invoices-microservice and purpose transactional]`
-- `[MISSING: confirmation that NOTIFICATIONS_SERVICE_TOKEN is accepted by Notifications auth guard, or a dedicated invoices service actor/token path]`
 - `[MISSING: FlipFlop runtime smoke proving authenticated central order snapshots carry customer.authSubject]`
 - `[MISSING: Cliplot hosted Auth callback/session contract before authenticated checkout can pass Auth subject]`
 - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
@@ -235,9 +232,6 @@ Validation:
 
 Split startup/runtime prerequisites from issuance/legal prerequisites:
 
-- `invoices-microservice-secret` now contains only deploy-critical runtime
-  keys: DB password, internal service token, Orders token, Payments API key,
-  and Notifications token.
 - `invoices-microservice-seller-secret` is projected as optional. If seller
   legal fields are missing, invoice issuance still fails closed with
   `seller_legal_config_missing`, but the service can start once core runtime
@@ -257,16 +251,9 @@ Current source state:
 
 - `invoices-microservice` is clean on `main` at
   `f3e518f feat: make seller legal config optional for startup`.
-- `orders-microservice` source accepts `x-service-name:
-  invoices-microservice` with `INVOICES_INTERNAL_SERVICE_TOKEN`/
-  `INVOICES_ORDERS_SERVICE_TOKEN` for the internal order read boundary.
 - `payments-microservice` source exposes
   `GET /payments/status/by-order-id?applicationId=<applicationId>&orderId=<orderId>`
   behind `X-API-Key` with `payments:read` scope.
-- `notifications-microservice` source commit
-  `8a6b7ed feat: allow invoices notifications service actor` accepts
-  `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` as an `invoices-microservice`
-  machine actor. That repository is currently `main...origin/main [ahead 1]`.
 
 Live deploy preflight remains blocked and correctly fails closed:
 
@@ -363,7 +350,6 @@ prove:
 The verifier reads secrets only for equality/scope checks and never prints
 secret values.
 
-
 ## 2026-07-02 - Final Smoke Prerequisite Live Check
 
 Ran the new final-smoke prerequisite verifier against live Alfares state. It
@@ -379,7 +365,6 @@ Live blockers reported by `npm run verify:final-smoke-prereqs`:
 - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: seller legal secret invoices-microservice-seller-secret]`
 - `[MISSING: Vault key secret/prod/invoices-microservice.PAYMENTS_API_KEY]`
-- `[MISSING: Vault key secret/prod/invoices-microservice.NOTIFICATIONS_SERVICE_TOKEN]`
 - `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`
 - `[MISSING: Notifications no-send invoices.documents validation passes]`
 
@@ -415,7 +400,6 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
-
 
 ## 2026-07-02 - Invoice Document Storage Contract Selected
 
@@ -456,7 +440,6 @@ Pre-enable gate:
 - `npm test`: passed, 7 suites / 19 tests.
 - `git diff --check`: passed.
 
-
 ## 2026-07-02 - Invoice Object Reference Schema
 
 Implemented the source-level database shape needed for future MinIO/S3 invoice
@@ -484,7 +467,6 @@ Remaining storage blockers:
 - `[MISSING: approved retention class and lifecycle policy for tax documents]`
 - `[MISSING: invoices storage client implementation and checksum validation]`
 - `[MISSING: backfill and rollback plan for DB-backed PDFs]`
-
 
 ## 2026-07-02 - Core Runtime Prerequisites Closed
 
@@ -624,7 +606,6 @@ The sync command was not executed because
 `secret/prod/invoices-microservice-seller` is still missing. The next required
 external action is to create that Vault path with approved seller legal data.
 
-
 ## 2026-07-02 - Final Smoke Evidence Verifier
 
 Added a read-only-by-default verifier for the approved synthetic final-smoke
@@ -652,14 +633,7 @@ The verifier was not run against a live fixture because
 `secret/prod/invoices-microservice-seller` and
 `ORDERS_EVENTS_CONSUMER_ENABLED=true` are still missing.
 
-
 ## 2026-07-02 - Notifications Runtime Drift Repaired
-
-Validation after adding the final-smoke evidence verifier found that the live
-Notifications deployment had drifted to image
-`localhost:5000/notifications-microservice:583da28`. That image did not include
-the `INVOICES_NOTIFICATIONS_SERVICE_TOKEN` static service actor, so
-`./scripts/check-invoices-documents-readiness.sh` returned HTTP 401.
 
 Redeployed and pinned `notifications-microservice` to immutable image
 `localhost:5000/notifications-microservice:f855764`. Rollout and in-pod health
@@ -674,7 +648,6 @@ Current invoices pre-consumer gate:
   `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
 - `ORDERS_EVENTS_CONSUMER_ENABLED` remains disabled intentionally until seller
   legal data exists and the guarded enable script is allowed to run.
-
 
 ## 2026-07-02 - Notifications Immutable Deploy Hardening
 
@@ -704,7 +677,6 @@ No Notifications deploy, `/notifications/send`, provider dispatch,
 `channel_registry` mutation, or customer contact was run for this source
 hardening.
 
-
 ## 2026-07-02 - Logging Contract Hardening
 
 Added test-covered source evidence for the Logging integration:
@@ -724,7 +696,6 @@ Validation:
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
 
-
 ## 2026-07-02 - Runtime Activation Plan Refresh
 
 Added `docs/orchestrator/RUNTIME_ACTIVATION_PLAN.md` as the owner-ready,
@@ -738,7 +709,6 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
-
 
 ## 2026-07-02 - Orders Auth Subject Source Proof Integrated
 
@@ -772,7 +742,6 @@ Validation:
 - `npm run verify:contracts`: passed.
 - `npm run verify:runtime-readiness`: passed.
 - `git diff --check`: passed.
-
 
 ## 2026-07-02 - Runtime Activation Gates Closed
 

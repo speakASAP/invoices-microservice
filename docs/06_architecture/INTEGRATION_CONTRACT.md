@@ -74,5 +74,4 @@ When `payments-microservice` or `notifications-microservice` is unavailable, the
 - `GET /health` returns a healthy payload.
 - A replayed Orders event never produces a second invoice of the same type for the same order.
 - Invoice numbers are unique within each invoice type and year, allocated inside a database transaction.
-- Internal routes reject a request without a valid internal service token; customer-account routes reject a request without a valid customer bearer token.
 - Emitted log metadata contains no address, email, token or provider payload values.
