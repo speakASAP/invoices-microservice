@@ -119,12 +119,7 @@ Sequence allocation happens inside a database transaction and is unique by invoi
 
 Secrets are stored in Vault at `secret/prod/invoices-microservice` and `secret/prod/invoices-microservice-seller` and synced into `statex-apps` by External Secrets Operator.
 
-| Secret key | Purpose |
-|---|---|
-| `DB_PASSWORD` | PostgreSQL password for the scoped `invoices` role |
-| Pair-specific Auth service JWTs | One Auth-registered caller-to-invoices-microservice credential per HTTP caller, delivered Vault -> ExternalSecret -> Kubernetes Secret -> secretKeyRef |
-| Pair-specific outbound service JWTs | A distinct Auth-registered credential for every invoices-microservice target call, delivered through the same secret path |
-| `INVOICE_SELLER_*` | Seller legal and tax identity used on issued invoices |
+For machine service identity, follow the sole canonical [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md). It is not reproduced here.
 
 ### current state
 

@@ -48,7 +48,7 @@ invoices-microservice owns invoice document records, invoice sequence counters, 
 
 ## authentication and authorization
 
-Machine-accessible routes and all outbound HTTP calls follow auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md. Auth is the only signer; every caller-to-target pair uses its own Auth-registered RS256 bearer JWT with a least-privilege target-scoped role. Receivers validate through Auth or an approved local RS256 verifier, create a separate service actor, explicitly enforce roles per route, and deny and error-log undecorated routes. Pair credentials flow only through Vault -> ExternalSecret -> Kubernetes Secret -> secretKeyRef.
+For machine service identity, follow the sole canonical [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md). It is not reproduced here.
 
 Customer-account routes use the separate human-token validation standard. Public document routes use an opaque, rotatable download link rather than a machine credential.
 
