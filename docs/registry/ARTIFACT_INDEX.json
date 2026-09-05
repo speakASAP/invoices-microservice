@@ -1,8 +1,54 @@
 {
   "schema_version": "1.0",
   "repository": "invoices-microservice",
-  "generated_at": "2026-08-31T18:25:00Z",
-  "artifacts": [],
+  "generated_at": "2026-09-05T18:09:33Z",
+  "artifacts": [
+    {
+      "id": "GOAL-INV-001",
+      "type": "goal",
+      "status": "done",
+      "title": "Invoices issuance MVP",
+      "path": "TASKS.md",
+      "parent_ids": [],
+      "updated_at": "2026-07-06T00:00:00Z"
+    },
+    {
+      "id": "GOAL-INV-002",
+      "type": "goal",
+      "status": "blocked",
+      "title": "Goal 2 durable storage runtime lane: owner approval for MinIO/S3 bucket provisioning and retention policy",
+      "path": "TASKS.md",
+      "parent_ids": [],
+      "updated_at": "2026-09-05T18:09:33Z"
+    },
+    {
+      "id": "GOAL-INV-003",
+      "type": "goal",
+      "status": "blocked",
+      "title": "Goal 3 authenticated Orders proof lane: deployed authenticated checkout/runtime evidence for customer.authSubject",
+      "path": "TASKS.md",
+      "parent_ids": [],
+      "updated_at": "2026-09-05T18:09:33Z"
+    },
+    {
+      "id": "GOAL-INV-004",
+      "type": "goal",
+      "status": "blocked",
+      "title": "Goal 4 corrections lane: owner-approved refund/correction workflow and credit-note numbering",
+      "path": "TASKS.md",
+      "parent_ids": [],
+      "updated_at": "2026-09-05T18:09:33Z"
+    },
+    {
+      "id": "TASK-INV-001",
+      "type": "task",
+      "status": "done",
+      "title": "TASK-001-bootstrap-service \u2014 IPS adoption baseline",
+      "path": "TASKS.md",
+      "parent_ids": [],
+      "updated_at": "2026-08-30T00:00:00Z"
+    }
+  ],
   "warnings": [
     "MISSING_RUNLAYER_PROJECT_MAPPING: RunLayer mapping is not yet verified for invoices-microservice."
   ]
