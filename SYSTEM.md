@@ -123,10 +123,8 @@ Secrets are stored in Vault at `secret/prod/invoices-microservice` and `secret/p
 | Secret key | Purpose |
 |---|---|
 | `DB_PASSWORD` | PostgreSQL password for the scoped `invoices` role |
-| `INVOICES_INTERNAL_SERVICE_TOKEN` | Internal service token guarding internal invoice routes |
-| `ORDERS_SERVICE_TOKEN` | Bearer token for authenticated Orders snapshot reads |
-| `PAYMENTS_API_KEY` | API key for optional payment status enrichment |
-| `NOTIFICATIONS_SERVICE_TOKEN` | Token for optional invoice document delivery |
+| Pair-specific Auth service JWTs | One Auth-registered caller-to-invoices-microservice credential per HTTP caller, delivered Vault -> ExternalSecret -> Kubernetes Secret -> secretKeyRef |
+| Pair-specific outbound service JWTs | A distinct Auth-registered credential for every invoices-microservice target call, delivered through the same secret path |
 | `INVOICE_SELLER_*` | Seller legal and tax identity used on issued invoices |
 
 ### current state
