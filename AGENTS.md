@@ -91,3 +91,9 @@ The final task report must include:
 
 ## Service-to-service authentication
 For machine service identity, follow the sole canonical [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md). It is not reproduced here.
+
+**Known non-conformance — do not copy or extend.** `InternalAuthGuard` (`src/common/internal-auth.guard.ts`) authenticates internal routes with a static shared `INVOICES_INTERNAL_SERVICE_TOKEN`.
+
+A shared static secret is not an Auth-issued RS256 principal per `(caller -> invoices-microservice)` pair, is not revocable per caller, and carries no verifiable `internal:invoices-microservice:<role>` claim. Prohibited by the standard above.
+
+Note this repository is also on the calling side of the same drift: it reaches payments-microservice with a static `x-api-key`. Neither direction is a supported protocol. Do not add new callers to this guard; migrate to per-pair Auth-issued credentials.
