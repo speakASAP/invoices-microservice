@@ -148,7 +148,7 @@ curl_internal_json() {
   local url="$1"
   local output="$2"
   curl -fsS \
-    -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN}" \
+    -H "Authorization: Bearer ${INVOICES_SERVICE_TOKEN}" \
     "$url" \
     -o "$output"
 }
@@ -337,19 +337,19 @@ check_internal_document() {
 }
 
 check_payments_status_api() {
-  local api_key payments_json
-  api_key="${PAYMENTS_API_KEY:-}"
-  if [ -z "$api_key" ]; then
-    api_key="$(read_secret_key "$INVOICES_SECRET_NAME" PAYMENTS_API_KEY)"
+  local token payments_json
+  token="${PAYMENTS_SERVICE_TOKEN:-}"
+  if [ -z "$token" ]; then
+    token="$(read_secret_key "$INVOICES_SECRET_NAME" PAYMENTS_SERVICE_TOKEN)"
   fi
-  if [ -z "$api_key" ]; then
-    missing_item "PAYMENTS_API_KEY available for read-only payment status evidence"
+  if [ -z "$token" ]; then
+    missing_item "PAYMENTS_SERVICE_TOKEN available for read-only payment status evidence"
     return
   fi
 
   payments_json="$(new_tmp_file)"
   if curl -fsS \
-    -H "X-API-Key: ${api_key}" \
+    -H "Authorization: Bearer ${token}" \
     "${PAYMENTS_BASE_URL%/}/payments/status/by-order-id?applicationId=${PAYMENT_APPLICATION_ID}&orderId=${ORDER_ID}" \
     -o "$payments_json"; then
     ok "Payments status snapshot endpoint returned data"
@@ -444,7 +444,7 @@ check_download_link_rotation() {
 
   link_json="$(new_tmp_file)"
   if curl -fsS -X POST \
-    -H "x-internal-service-token: ${INVOICES_INTERNAL_SERVICE_TOKEN}" \
+    -H "Authorization: Bearer ${INVOICES_SERVICE_TOKEN}" \
     "${INVOICES_BASE_URL%/}/invoices/${FINAL_INVOICE_ID}/download-link" \
     -o "$link_json"; then
     ok "internal final download-link rotation returned data"
@@ -585,15 +585,15 @@ ok "running Postgres pod found"
 check_invoice_rows "$postgres_pod"
 check_event_rows "$postgres_pod"
 
-INVOICES_INTERNAL_SERVICE_TOKEN="${INVOICES_INTERNAL_SERVICE_TOKEN:-}"
-if [ -z "$INVOICES_INTERNAL_SERVICE_TOKEN" ]; then
-  INVOICES_INTERNAL_SERVICE_TOKEN="$(read_secret_key "$INVOICES_SECRET_NAME" INVOICES_INTERNAL_SERVICE_TOKEN)"
+INVOICES_SERVICE_TOKEN="${INVOICES_SERVICE_TOKEN:-}"
+if [ -z "$INVOICES_SERVICE_TOKEN" ]; then
+  INVOICES_SERVICE_TOKEN="$(read_secret_key "$INVOICES_SECRET_NAME" INVOICES_SERVICE_TOKEN)"
 fi
-if [ -n "$INVOICES_INTERNAL_SERVICE_TOKEN" ]; then
-  ok "internal invoices token is available for evidence calls"
+if [ -n "$INVOICES_SERVICE_TOKEN" ]; then
+  ok "Auth invoices service token is available for evidence calls"
   check_internal_invoice_api
 else
-  missing_item "INVOICES_INTERNAL_SERVICE_TOKEN available for internal evidence calls"
+  missing_item "INVOICES_SERVICE_TOKEN available for internal evidence calls"
 fi
 
 check_payments_status_api

@@ -48,7 +48,7 @@ assert(packageJson.includes('verify:consumer-enable-prereqs'), 'consumer enable 
 assert(packageJson.includes('verify:seller-legal-source'), 'seller legal source verifier script is not registered');
 assert(packageJson.includes('runtime:sync-seller-legal'), 'seller legal sync runtime script is not registered');
 assert(packageJson.includes('runtime:enable-orders-consumer'), 'consumer enable runtime script is not registered');
-assert(finalSmokePrereqs.includes('PAYMENT_API_KEY_SCOPES'), 'final smoke verifier must check Payments API key scope');
+assert(finalSmokePrereqs.includes('PAYMENTS_SERVICE_TOKEN'), 'final smoke verifier must check Payments Auth service token');
 assert(finalSmokePrereqs.includes('channel_registry'), 'final smoke verifier must check Notifications channel policy');
 assert(finalSmokePrereqs.includes('kubectl exec -i'), 'final smoke verifier must pipe Notifications channel SQL safely into Postgres');
 assert(finalSmokePrereqs.includes('ALLOW_CONSUMER_DISABLED'), 'final smoke verifier must support consumer-disabled pre-enable checks');

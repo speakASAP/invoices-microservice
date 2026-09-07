@@ -204,42 +204,19 @@ check_seller_legal_secret() {
   fi
 }
 
-check_payments_key_scope() {
+check_payments_service_token() {
   if ! require_command vault; then
     return
   fi
 
-  local invoices_key payments_keys payment_scopes
-  invoices_key="$(read_vault_field "$INVOICES_VAULT_SECRET_PATH" PAYMENTS_API_KEY)"
-  payments_keys="$(read_vault_field "$PAYMENTS_VAULT_SECRET_PATH" API_KEYS)"
-  payment_scopes="$(read_vault_field "$PAYMENTS_VAULT_SECRET_PATH" PAYMENT_API_KEY_SCOPES)"
+  local invoices_token
+  invoices_token="$(read_vault_field "$INVOICES_VAULT_SECRET_PATH" PAYMENTS_SERVICE_TOKEN)"
 
-  if [ -z "$invoices_key" ]; then
-    missing_item "Vault key ${INVOICES_VAULT_SECRET_PATH}.PAYMENTS_API_KEY"
+  if [ -z "$invoices_token" ]; then
+    missing_item "Vault key ${INVOICES_VAULT_SECRET_PATH}.PAYMENTS_SERVICE_TOKEN"
     return
   fi
-  ok "invoices PAYMENTS_API_KEY exists in Vault"
-
-  if [ -z "$payments_keys" ]; then
-    missing_item "Vault key ${PAYMENTS_VAULT_SECRET_PATH}.API_KEYS"
-    return
-  fi
-  if [ -z "$payment_scopes" ]; then
-    missing_item "Vault key ${PAYMENTS_VAULT_SECRET_PATH}.PAYMENT_API_KEY_SCOPES"
-    return
-  fi
-
-  if csv_has_exact_value "$payments_keys" "$invoices_key"; then
-    ok "Payments API_KEYS includes the invoices key"
-  else
-    missing_item "Payments API_KEYS includes the invoices key"
-  fi
-
-  if scope_map_has_scope "$payment_scopes" "$invoices_key" "$REQUIRED_PAYMENTS_SCOPE"; then
-    ok "Payments API key has ${REQUIRED_PAYMENTS_SCOPE} scope"
-  else
-    missing_item "Payments API key has ${REQUIRED_PAYMENTS_SCOPE} scope"
-  fi
+  ok "invoices PAYMENTS_SERVICE_TOKEN exists in Vault"
 }
 
 check_notifications_token_projection() {
@@ -333,7 +310,7 @@ check_core_runtime_prereqs
 check_invoices_deployment_ready
 check_invoices_config_for_final_smoke
 check_seller_legal_secret
-check_payments_key_scope
+check_payments_service_token
 check_notifications_token_projection
 check_notifications_channel_policy
 check_notifications_no_send_validate

@@ -12,9 +12,15 @@ export class PaymentsClientService {
 
   async fetchPaymentSnapshot(applicationId: string | undefined, orderId: string): Promise<Record<string, unknown> | null> {
     const baseUrl = process.env.PAYMENTS_SERVICE_URL?.trim()?.replace(/\/+$/, '');
-    const apiKey = process.env.PAYMENTS_API_KEY?.trim();
-    if (!baseUrl || !apiKey || !applicationId) {
+    if (!baseUrl || !applicationId) {
       return null;
+    }
+
+    const token = process.env.PAYMENTS_SERVICE_TOKEN?.trim();
+    if (!token) {
+      throw new Error(
+        'PAYMENTS_SERVICE_TOKEN is not configured; refusing to call payments-microservice unauthenticated',
+      );
     }
 
     try {
@@ -22,7 +28,9 @@ export class PaymentsClientService {
         this.httpService.get(`${baseUrl}/payments/status/by-order-id`, {
           timeout: 10000,
           params: { applicationId, orderId },
-          headers: { 'X-API-Key': apiKey },
+          headers: {
+            authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          },
         }),
       );
       const data = response.data?.data || response.data;
@@ -39,7 +47,10 @@ export class PaymentsClientService {
         source: data.source || 'payments_db_snapshot',
         providerCall: false,
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('PAYMENTS_SERVICE_TOKEN')) {
+        throw error;
+      }
       this.logger.warn('Payments snapshot read skipped after failure', 'PaymentsClientService', { orderId, reason: 'payment_snapshot_unavailable' });
       return null;
     }

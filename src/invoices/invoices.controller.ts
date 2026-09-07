@@ -2,10 +2,21 @@ import { Body, Controller, ForbiddenException, Get, Header, Param, Post, Query, 
 import { Request, Response } from 'express';
 import { CustomerAuthGuard, CustomerAuthUser } from '../common/customer-auth.guard';
 import { InternalAuthGuard } from '../common/internal-auth.guard';
+import { Roles } from '../common/roles.decorator';
 import { InvoicesService } from './invoices.service';
 import { InvoiceDocument } from './entities/invoice-document.entity';
 
 type CustomerRequest = Request & { customerAuth?: CustomerAuthUser };
+
+const INVOICES_READ_ROLES = [
+  'internal:invoices-microservice:read',
+  'internal:invoices-microservice:service',
+] as const;
+
+const INVOICES_WRITE_ROLES = [
+  'internal:invoices-microservice:write',
+  'internal:invoices-microservice:service',
+] as const;
 
 @Controller()
 export class InvoicesController {
@@ -13,6 +24,7 @@ export class InvoicesController {
 
   @Get('invoices/order/:orderId')
   @UseGuards(InternalAuthGuard)
+  @Roles(...INVOICES_READ_ROLES)
   async findByOrder(@Param('orderId') orderId: string) {
     const invoices = await this.invoicesService.findByOrder(orderId);
     return {
@@ -23,6 +35,7 @@ export class InvoicesController {
 
   @Post('invoices/events/orders')
   @UseGuards(InternalAuthGuard)
+  @Roles(...INVOICES_WRITE_ROLES)
   async ingestOrdersEvent(@Body() body: unknown) {
     const result = await this.invoicesService.handleOrdersEvent(body);
     return { success: true, data: result };
@@ -58,6 +71,7 @@ export class InvoicesController {
 
   @Get('invoices/:invoiceId/document.html')
   @UseGuards(InternalAuthGuard)
+  @Roles(...INVOICES_READ_ROLES)
   async getInternalDocument(
     @Param('invoiceId') invoiceId: string,
     @Res() response: Response,
@@ -72,6 +86,7 @@ export class InvoicesController {
 
   @Get('invoices/:invoiceId/document.pdf')
   @UseGuards(InternalAuthGuard)
+  @Roles(...INVOICES_READ_ROLES)
   @Header('Content-Type', 'application/pdf')
   async getInternalPdfDocument(
     @Param('invoiceId') invoiceId: string,
@@ -86,6 +101,7 @@ export class InvoicesController {
 
   @Post('invoices/:invoiceId/download-link')
   @UseGuards(InternalAuthGuard)
+  @Roles(...INVOICES_WRITE_ROLES)
   async createDownloadLink(@Param('invoiceId') invoiceId: string) {
     const links = await this.invoicesService.createDownloadLinks(invoiceId);
     if (!links) {
