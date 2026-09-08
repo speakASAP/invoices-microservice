@@ -54,7 +54,7 @@ export class CredentialSelfReporter {
 
   async runReport(): Promise<{ verdict: string; posted: boolean } | null> {
     const token = (process.env.ORDERS_SERVICE_TOKEN || '').trim();
-    const ingestToken = (process.env.NOTIFICATION_SERVICE_TOKEN || '').trim();
+    const ingestToken = (process.env.MONITORING_INGEST_SERVICE_TOKEN || '').trim();
 
     if (!ingestToken) {
       // A reporter that stops reporting is indistinguishable from a credential
@@ -63,7 +63,7 @@ export class CredentialSelfReporter {
         'credential_self_report_undeliverable',
         undefined,
         'CredentialSelfReporter',
-        { principal: PRINCIPAL, reason: 'NOTIFICATION_SERVICE_TOKEN is empty' },
+        { principal: PRINCIPAL, reason: 'MONITORING_INGEST_SERVICE_TOKEN is empty' },
       );
       return null;
     }
