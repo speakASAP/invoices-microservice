@@ -14,7 +14,8 @@
 - `DB_AUTO_CREATE` is either explicitly owner-approved for first deploy or the
   `invoices` database already exists.
 - Orders accepts `invoices-microservice` internal read role.
-- Payments accepts the invoices API key with `payments:read` scope.
+- Payments accepts invoices via Auth-issued pair RS256 Bearer
+  ([`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md)).
 - Seller legal fields are configured before legal issuance; missing seller
   legal data must fail closed and must not block service startup.
 - RabbitMQ queue binding is configured.

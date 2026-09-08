@@ -122,7 +122,7 @@ including the ExternalSecret.
 Deployment remains blocked because runtime prerequisites are still not closed:
 
 - `[MISSING: invoices database exists or owner-approved DB_AUTO_CREATE=true first deploy]`
-- `[MISSING: secret/prod/invoices-microservice values for DB password, internal token, Orders token, Payments API key, Notifications token, and seller legal fields]`
+- `[MISSING: secret/prod/invoices-microservice values for DB password, internal token, Orders token, Payments pair RS256 Bearer (see SERVICE_IDENTITY_CONSUMER_STANDARD.md), Notifications token, and seller legal fields]`
 - `[MISSING: core dependencies ready for deploy smoke: Orders, Payments, Notifications, Logging, RabbitMQ]`
 
 ## 2026-07-02 - Non-Secret Runtime Preflight
@@ -255,7 +255,8 @@ Current source state:
   `f3e518f feat: make seller legal config optional for startup`.
 - `payments-microservice` source exposes
   `GET /payments/status/by-order-id?applicationId=<applicationId>&orderId=<orderId>`
-  behind `X-API-Key` with `payments:read` scope.
+  behind Auth-issued pair RS256 Bearer
+  ([`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md)).
 
 Live deploy preflight remains blocked and correctly fails closed:
 
@@ -344,7 +345,8 @@ prove:
 - `invoices-microservice` is deployed and ready;
 - `ORDERS_EVENTS_CONSUMER_ENABLED=true` and public base URL are set;
 - seller legal secret values are configured;
-- the invoices Payments API key is registered in Payments with `payments:read`;
+- invoices→Payments S2S uses Auth-issued pair RS256 Bearer
+  ([`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md));
 - Notifications projects the invoices token, has an active
   `invoices.documents` channel policy for `invoices-microservice` and
   `transactional`, and its no-send validation script passes.
@@ -366,7 +368,7 @@ Live blockers reported by `npm run verify:final-smoke-prereqs`:
 - `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`
 - `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`
 - `[MISSING: seller legal secret invoices-microservice-seller-secret]`
-- `[MISSING: Vault key secret/prod/invoices-microservice.PAYMENTS_API_KEY]`
+- `[MISSING: Vault pair RS256 Bearer for invoices→payments per SERVICE_IDENTITY_CONSUMER_STANDARD.md]`
 - `[MISSING: Notifications channel_registry policy for invoices.documents allows invoices-microservice/transactional]`
 - `[MISSING: Notifications no-send invoices.documents validation passes]`
 
@@ -432,8 +434,8 @@ Pre-enable gate:
 - `npm run verify:consumer-enable-prereqs`: failed as expected with only
   `[MISSING: seller legal secret invoices-microservice-seller-secret]` after
   core runtime prerequisites, deployed invoices workload, public base URL,
-  Payments `payments:read`, Notifications token projection, channel policy,
-  and no-send validation passed.
+  Payments pair RS256 Bearer (SPOT), Notifications token projection, channel
+  policy, and no-send validation passed.
 - FlipFlop commit `23b22e0 test: add auth subject orders smoke gate` added
   `smoke:orders-auth-subject`. The default run is non-mutating and fail-closed
   on approval inputs; approved runtime execution with fixture product/warehouse
@@ -483,9 +485,8 @@ Re-ran the live runtime gates after the storage contract commit:
   `[MISSING: INVOICES_PUBLIC_BASE_URL configured with https]`,
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
   and `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
-- Payments API key registration with `payments:read`, Notifications token
-  projection, and Notifications no-send `invoices.documents` validation are
-  verified present.
+- Payments pair RS256 Bearer (SPOT), Notifications token projection, and
+  Notifications no-send `invoices.documents` validation are verified present.
 - Notifications `invoices.documents` channel policy is verified present and
   allows `invoices-microservice/transactional`.
 

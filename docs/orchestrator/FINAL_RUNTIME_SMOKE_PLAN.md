@@ -62,9 +62,10 @@ activation evidence on top of
   - `secret/prod/invoices-microservice-seller` exists and syncs into
     `invoices-microservice-seller-secret`; required key names are present and
     values were not printed.
-  - Payments API key registration, Notifications token projection,
-    `invoices.documents` channel policy, and Notifications no-send validation
-    passed.
+  - Payments S2S auth (Auth-issued pair RS256 Bearer per
+    [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md)),
+    Notifications token projection, `invoices.documents` channel policy, and
+    Notifications no-send validation passed.
 - `npm run verify:consumer-enable-prereqs`: superseded by the passing strict
   `verify:final-smoke-prereqs` gate.
 - `npm run verify:seller-legal-source`: superseded by the synced seller legal
@@ -105,10 +106,11 @@ The smoke remains blocked until all gates are closed.
    ssh alfares 'cd /home/ssf/Documents/Github/invoices-microservice && npm run verify:final-smoke-prereqs'
    ```
 
-2. Vault path `secret/prod/invoices-microservice` exists with these key names
-   only verified by presence, never printed:
+2. Vault path `secret/prod/invoices-microservice` exists with required key
+   names only verified by presence, never printed:
    - `DB_PASSWORD`
-   - `PAYMENTS_API_KEY`
+   - pair RS256 Bearer credential for invoices→payments S2S (Auth-issued;
+     see [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md))
 
 3. Database gate:
    - Preferred: `invoices` database already exists.
@@ -162,9 +164,9 @@ The smoke remains blocked until all gates are closed.
    - `[MISSING: runtime MinIO/S3 invoice document bucket, credentials, retention policy, DB object-reference migration, upload/presign client, and backfill/rollback plan]`
 
 10. Payments central-order gate:
-   - Invoices Vault has `PAYMENTS_API_KEY`.
-   - Payments runtime registers that key in `API_KEYS`/
-     `PAYMENT_API_KEY_SCOPES` with `payments:read` scope.
+   - Invoices→Payments calls use Auth-issued pair RS256 Bearer only
+     ([`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md)).
+     Do not use `PAYMENTS_API_KEY`, `X-API-Key`, or `API_KEYS`.
    - The fixture payment must use a central Orders UUID as `orderId`.
    - `[MISSING: proof that all active checkout/payment paths pass central Orders UUIDs to Payments]`
 
@@ -221,8 +223,9 @@ ssh alfares 'cd /home/ssf/Documents/Github/notifications-microservice && npm tes
 Expected result: all source checks pass, `verify:runtime-prereqs` passes, and
 `verify:final-smoke-prereqs` passes. Current live state has both runtime
 verifiers passing. Invoices deployment, public base URL, Orders consumer switch,
-seller legal secret sync, Payments key scope, Notifications token, Notifications
-channel policy, and Notifications no-send validation gates pass. If either
+seller legal secret sync, Payments pair RS256 Bearer (SPOT), Notifications
+token, Notifications channel policy, and Notifications no-send validation gates
+pass. If either
 runtime verifier fails in the final run, stop.
 
 Before enabling the Orders consumer, run:

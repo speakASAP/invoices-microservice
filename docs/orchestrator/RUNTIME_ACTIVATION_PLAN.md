@@ -45,9 +45,9 @@ Last observed on 2026-07-02:
   legal/consumer gates are not configured yet:
   `[MISSING: ORDERS_EVENTS_CONSUMER_ENABLED=true for RabbitMQ final smoke]`,
   and `[MISSING: seller legal secret invoices-microservice-seller-secret]`.
-- Invoices deployment, public base URL, Payments API key scope, Notifications
-  token projection, Notifications `invoices.documents` channel policy, and
-  Notifications no-send validation are verified present.
+- Invoices deployment, public base URL, Payments pair RS256 Bearer (SPOT),
+  Notifications token projection, Notifications `invoices.documents` channel
+  policy, and Notifications no-send validation are verified present.
 
 ## Parallel Runtime Workstreams
 
@@ -110,7 +110,8 @@ Last observed on 2026-07-02:
 ## Approval Boundaries
 
 - Owner approval required: create `invoices` database, set Vault values, change
-  Payments runtime API keys, write seller legal secrets, deploy the service, set
+  Payments pair RS256 Bearer credentials (SPOT), write seller legal secrets,
+  deploy the service, set
   `ORDERS_EVENTS_CONSUMER_ENABLED=true`, create fixture orders/payments, or send
   notifications.
 - No approval required: read-only verifiers, source-only docs/tests/scripts,

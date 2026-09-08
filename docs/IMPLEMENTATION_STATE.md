@@ -239,8 +239,9 @@ provider call was run.
 
 2026-07-02 continuation: Added `npm run verify:final-smoke-prereqs` for the
 post-deploy/pre-smoke gate. It checks the deployed invoices workload, final
-consumer enablement, seller legal secret, Payments `payments:read` scope for
-the invoices API key, Notifications token projection, `invoices.documents`
+consumer enablement, seller legal secret, Payments pair RS256 Bearer
+([`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md)),
+Notifications token projection, `invoices.documents`
 channel policy, and the Notifications no-send validation script without
 printing secret values.
 
@@ -282,7 +283,7 @@ callback/session contract before Cliplot can pass a customer Auth subject.
 
 2026-07-02 continuation: Re-ran `npm run verify:consumer-enable-prereqs`.
 Core runtime prerequisites, deployed invoices workload, public base URL,
-Payments API key `payments:read` scope, Notifications token projection,
+Payments pair RS256 Bearer (SPOT), Notifications token projection,
 `invoices.documents` channel policy, and Notifications no-send validation all
 passed. The gate still exits `1` only because `[MISSING: seller legal secret
 invoices-microservice-seller-secret]`; keep `ORDERS_EVENTS_CONSUMER_ENABLED`
@@ -330,7 +331,7 @@ node-level rollout pressure cleared, `invoices-microservice` returned `1/1`,
 `https://invoices.alfares.cz/health` returned success, and
 `npm run verify:final-smoke-prereqs` exited `0` with Orders, Payments,
 Notifications, Logging, RabbitMQ, seller legal, public base URL, consumer
-switch, Payments `payments:read`, Notifications token projection,
+switch, Payments pair RS256 Bearer (SPOT), Notifications token projection,
 `invoices.documents` policy, and no-send validation all passing. No synthetic
 order, payment provider call, customer notification send, production DB row
 dump, token value print, or final smoke fixture was run.
