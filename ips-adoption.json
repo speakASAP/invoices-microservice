@@ -85,11 +85,11 @@
       "capability": "payments",
       "component": "payments-microservice",
       "decision": "required",
-      "reason": "Real payment status enrichment client code exists in src/invoices/payments-client.service.ts, which reads GET /payments/status/by-order-id using PAYMENTS_SERVICE_URL and PAYMENTS_API_KEY.",
+      "reason": "Payment status enrichment client exists in src/invoices/payments-client.service.ts (GET /payments/status/by-order-id). Machine auth must be Auth-issued pair RS256 Bearer per SERVICE_IDENTITY_CONSUMER_STANDARD.md — not PAYMENTS_API_KEY / X-API-Key.",
       "contract": "GET /payments/status/by-order-id returning a payment snapshot used to enrich the final tax invoice",
-      "configuration": "PAYMENTS_SERVICE_URL in k8s/configmap.yaml and PAYMENTS_API_KEY from Vault, sent as the X-API-Key header",
+      "configuration": "PAYMENTS_SERVICE_URL in k8s/configmap.yaml and Auth-issued pair RS256 Bearer from Vault (Authorization: Bearer)",
       "failureMode": "The snapshot read returns null and logs a sanitized warning; the final tax invoice is still issued without payment enrichment rather than failing.",
-      "validation": "Enrichment path returns null when base URL, API key or applicationId is missing, confirmed in src/invoices/payments-client.service.ts."
+      "validation": "Enrichment path fails closed when base URL or pair Bearer is missing; see SERVICE_IDENTITY_CONSUMER_STANDARD.md."
     },
     {
       "capability": "catalog",
@@ -103,9 +103,9 @@
       "decision": "required",
       "reason": "This service consumes Orders lifecycle events and reads the authoritative order and billing snapshot from orders-microservice; confirmed in src/invoices/orders-client.service.ts and src/events/rabbitmq-orders.consumer.ts.",
       "contract": "Authenticated GET /api/orders/:orderId snapshot read, plus consumption of orders.order.created.v1 and orders.order.paid.v1 as issuance triggers",
-      "configuration": "ORDERS_SERVICE_URL in k8s/configmap.yaml and ORDERS_SERVICE_TOKEN from Vault, sent as the x-internal-service-token header with x-service-name: invoices-microservice",
+      "configuration": "ORDERS_SERVICE_URL in k8s/configmap.yaml and Auth-issued (invoices→orders) pair RS256 Bearer from Vault per SERVICE_IDENTITY_CONSUMER_STANDARD.md",
       "failureMode": "A missing base URL or token raises ORDER_READ_CONFIG_MISSING and an invalid response raises ORDER_READ_INVALID_RESPONSE, so issuance is blocked rather than inventing order, buyer or billing data.",
-      "validation": "Order snapshot read path and its explicit configuration/response error handling in src/invoices/orders-client.service.ts."
+      "validation": "Order snapshot read path and its explicit configuration/response error handling in src/invoices/orders-client.service.ts; S2S protocol is SERVICE_IDENTITY_CONSUMER_STANDARD.md only."
     },
     {
       "capability": "warehouse",
