@@ -12,6 +12,9 @@ export class LoggerService implements NestLoggerService {
   private readonly loggingServiceUrl = (process.env.LOGGING_SERVICE_URL || process.env.LOGGING_SERVICE_INTERNAL_URL || '').trim().replace(/\/+$/, '');
   private readonly loggingPath = process.env.LOGGING_SERVICE_API_PATH?.trim() || '/api/logs';
 
+  /** Process-wide latch so the missing-credential warning is not emitted per log line. */
+  private static missingTokenReported = false;
+
   constructor(private readonly httpService: HttpService) {}
 
   log(message: string, context?: string, metadata?: LogMetadata) {
@@ -44,18 +47,45 @@ export class LoggerService implements NestLoggerService {
     });
 
     if (this.loggingServiceUrl) {
-      firstValueFrom(
-        this.httpService.post(`${this.loggingServiceUrl}${this.loggingPath}`, {
-          level,
-          message: safeMessage,
-          service: this.serviceName,
-          timestamp: new Date().toISOString(),
-          metadata: safeMetadata,
-        }, {
-          timeout: 2000,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      ).catch(() => undefined);
+      // Ingest requires an Auth-issued RS256 pair token (role
+      // internal:logging-microservice:ingest). Without it logging-microservice
+      // answers 401 and every line is lost silently.
+      const ingestToken = process.env.LOGGING_SERVICE_TOKEN?.trim();
+      if (!ingestToken) {
+        if (!LoggerService.missingTokenReported) {
+          LoggerService.missingTokenReported = true;
+          // eslint-disable-next-line no-console
+          console.error(
+            `${new Date().toISOString()} [MISSING: LOGGING_SERVICE_TOKEN] ` +
+              `service=${this.serviceName} — logs are rejected (401) by logging-microservice. ` +
+              `Remote error alerting is blind to this service.`,
+          );
+        }
+      } else {
+        firstValueFrom(
+          this.httpService.post(`${this.loggingServiceUrl}${this.loggingPath}`, {
+            level,
+            message: safeMessage,
+            service: this.serviceName,
+            timestamp: new Date().toISOString(),
+            metadata: safeMetadata,
+          }, {
+            timeout: 2000,
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${ingestToken}`,
+            },
+          }),
+        ).catch((error) => {
+          // Never swallow silently: a rejected or failed ship means this service
+          // is invisible to error alerting, which is exactly what must be seen.
+          // eslint-disable-next-line no-console
+          console.error(
+            `${new Date().toISOString()} log ship failed service=${this.serviceName} ` +
+              `status=${error?.response?.status ?? 'n/a'} ${this.sanitizeString(String(error?.message ?? error))}`,
+          );
+        });
+      }
     }
 
     if (process.env.NODE_ENV !== 'production') {

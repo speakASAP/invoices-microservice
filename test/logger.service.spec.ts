@@ -14,12 +14,15 @@ describe('LoggerService logging-microservice contract', () => {
   const originalLoggingInternalUrl = process.env.LOGGING_SERVICE_INTERNAL_URL;
   const originalLoggingPath = process.env.LOGGING_SERVICE_API_PATH;
   const originalNodeEnv = process.env.NODE_ENV;
+  const originalIngestToken = process.env.LOGGING_SERVICE_TOKEN;
 
   afterEach(() => {
     restoreEnv('LOGGING_SERVICE_URL', originalLoggingUrl);
     restoreEnv('LOGGING_SERVICE_INTERNAL_URL', originalLoggingInternalUrl);
     restoreEnv('LOGGING_SERVICE_API_PATH', originalLoggingPath);
     restoreEnv('NODE_ENV', originalNodeEnv);
+    restoreEnv('LOGGING_SERVICE_TOKEN', originalIngestToken);
+    (LoggerService as unknown as { missingTokenReported: boolean }).missingTokenReported = false;
     jest.restoreAllMocks();
   });
 
@@ -27,6 +30,7 @@ describe('LoggerService logging-microservice contract', () => {
     process.env.NODE_ENV = 'production';
     process.env.LOGGING_SERVICE_URL = 'http://logging-microservice:3367';
     process.env.LOGGING_SERVICE_API_PATH = '/api/logs';
+    process.env.LOGGING_SERVICE_TOKEN = 'test-ingest-token';
     const httpService = {
       post: jest.fn(() => of({ data: { success: true } })),
     };
@@ -66,7 +70,10 @@ describe('LoggerService logging-microservice contract', () => {
       }),
       expect.objectContaining({
         timeout: 2000,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-ingest-token',
+        },
       }),
     );
     const payload = (httpService.post as jest.Mock).mock.calls[0][1];
@@ -78,6 +85,8 @@ describe('LoggerService logging-microservice contract', () => {
   it('does not fail invoice flow when remote logging is unavailable', () => {
     process.env.NODE_ENV = 'production';
     process.env.LOGGING_SERVICE_URL = 'http://logging-microservice:3367';
+    process.env.LOGGING_SERVICE_TOKEN = 'test-ingest-token';
+    jest.spyOn(console, 'error').mockImplementation(() => undefined);
     const httpService = {
       post: jest.fn(() => throwError(() => new Error('logging unavailable'))),
     };
@@ -94,6 +103,27 @@ describe('LoggerService logging-microservice contract', () => {
       }),
       expect.any(Object),
     );
+  });
+
+  it('does not post and reports loudly when the ingest credential is missing', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.LOGGING_SERVICE_URL = 'http://logging-microservice:3367';
+    delete process.env.LOGGING_SERVICE_TOKEN;
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const httpService = { post: jest.fn() };
+    const logger = new LoggerService(httpService as any);
+
+    // Posting without the credential is answered 401 and dropped, so the send
+    // is skipped -- but the gap must be stated, never silent.
+    expect(() => logger.log('Invoice issued', 'InvoicesService')).not.toThrow();
+
+    expect(httpService.post).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(String(errorSpy.mock.calls[0][0])).toContain('[MISSING: LOGGING_SERVICE_TOKEN]');
+
+    // Latched: the warning is reported once per process, not per log line.
+    logger.log('Another invoice', 'InvoicesService');
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 
   it('keeps local logging disabled when no logging URL is configured', () => {
